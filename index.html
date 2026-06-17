@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catatan Keuangan Tani</title>
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- Tailwind CSS via CDN Resmi -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  
+  <!-- Chart.js via CDN Resmi -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- SAMBUNGAN KE GOOGLE FONTS (PLUS JAKARTA SANS) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
+
+  <!-- File Style Kustom Lu -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50 font-sans text-gray-800 antialiased">
+
+  <!-- ========================================== -->
+  <!-- HEADER & STATUS KONEKSI (POJOK ATAS) -->
+  <!-- ========================================== -->
+  <header class="max-w-7xl mx-auto px-4 pt-6 pb-2 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-emerald-800 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-sm">
+        S
+      </div>
+      <h1 class="text-xl font-bold text-gray-900 tracking-tight">Catatan Keuangan</h1>
+    </div>
+    
+    <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+      <!-- Indikator Koneksi REST API (Dikontrol oleh app.js) -->
+      <div id="statusKoneksi" class="text-xs font-bold text-gray-400 flex items-center gap-2 bg-white px-3 py-1.5 rounded-full shadow-sm">
+        <span class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span> Menyambung...
+      </div>
+      
+      <!-- Akun User -->
+      <div class="text-xs font-medium text-gray-700 flex items-center gap-2 bg-white px-3 py-1.5 rounded-full shadow-sm border border-gray-100">
+        <span class="w-2 Hell-2 rounded-full bg-indigo-500"></span> tokomaslahattani@gmail.com
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-4 space-y-6">
+    
+    <!-- ========================================== -->
+    <!-- SECTION 1: DASHBOARD KPI CARDS -->
+    <!-- ========================================== -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Kartu Utama: Modal Bersih -->
+      <div class="lg:col-span-2 bg-gradient-to-br from-emerald-500 to-green-600 rounded-3xl p-6 text-white shadow-lg relative overflow-hidden flex flex-col justify-between min-h-[180px]">
+        <div>
+          <p class="text-sm font-medium text-emerald-100">Modal Bersih Saat Ini</p>
+          <h2 class="text-4xl font-extrabold mt-2 tracking-tight">Rp 31.659.091</h2>
+        </div>
+        <div class="mt-4">
+          <span class="inline-flex items-center gap-1.5 bg-emerald-700/40 px-3 py-1.5 rounded-full text-xs font-bold border border-emerald-400/20">
+            ⬇️ STATUS HARI INI: - Rp 203.000
+          </span>
+        </div>
+      </div>
+
+      <!-- Kotak Samping: Total Aset & Hutang -->
+      <div class="flex flex-col gap-4 justify-between">
+        <!-- Total Aset -->
+        <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center justify-between border-l-4 border-l-green-500">
+          <div>
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Aset (Uang Fisik)</p>
+            <h3 class="text-xl font-bold text-gray-800 mt-1">Rp 102.668.691</h3>
+          </div>
+        </div>
+        <!-- Total Titipan & Hutang -->
+        <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center justify-between border-l-4 border-l-amber-500">
+          <div>
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Titipan & Hutang</p>
+            <h3 class="text-xl font-bold text-gray-800 mt-1">Rp 71.009.600</h3>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SECTION 2: CHART TREN MODAL -->
+    <!-- ========================================== -->
+    <section class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-bold text-gray-800">Grafik Modal</h3>
+        <div class="inline-flex bg-gray-100 p-1 rounded-xl text-xs font-bold text-gray-500">
+          <button class="px-4 py-1.5 bg-white text-gray-800 rounded-lg shadow-sm">7 Hari</button>
+          <button class="px-4 py-1.5 hover:text-gray-800 transition">30 Hari</button>
+        </div>
+      </div>
+      <!-- Wadah Chart.js -->
+      <div class="relative w-full h-[260px]">
+        <canvas id="grafikModalCanvas"></canvas>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SECTION 3: ARUS KAS & TOMBOL TRANSAKSI -->
+    <!-- ========================================== -->
+    <section class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">
+      <div class="flex justify-between items-center">
+        <h3 class="text-lg font-bold text-gray-800">Arus Kas Harian</h3>
+        <span class="text-xs bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md font-bold border border-emerald-100 uppercase tracking-wider">Fast Input</span>
+      </div>
+
+      <!-- Grid Tombol Transaksi -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <button class="bg-emerald-800 hover:bg-emerald-900 text-white rounded-2xl p-4 font-bold flex flex-col items-center justify-center gap-2 shadow-sm transition active:scale-95 cursor-pointer">
+          <span class="text-xl">⬇️</span> + PEMASUKAN
+        </button>
+        <button class="bg-red-600 hover:bg-red-700 text-white rounded-2xl p-4 font-bold flex flex-col items-center justify-center gap-2 shadow-sm transition active:scale-95 cursor-pointer">
+          <span class="text-xl">⬆️</span> - PENGELUARAN
+        </button>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SECTION 4: FORM & TABEL SNAPSHOT BRANKAS -->
+    <!-- ========================================== -->
+    <section class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-4">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h3 class="text-lg font-bold text-gray-800">Catat Snapshot Brankas (Harian)</h3>
+        <div class="flex gap-2 w-full sm:w-auto">
+          <button class="bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 font-bold px-4 py-2 rounded-xl text-sm shadow-sm transition cursor-pointer">📜 Buku Besar</button>
+          <button class="bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 font-bold px-4 py-2 rounded-xl text-sm shadow-sm transition cursor-pointer">+ Baris</button>
+        </div>
+      </div>
+
+      <!-- Input Filter Tanggal -->
+      <div class="w-full sm:w-48">
+        <input type="date" value="2026-06-17" class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm font-semibold text-gray-700 focus:outline-none focus:border-emerald-500 shadow-sm">
+      </div>
+
+      <!-- Tabel Komponen Realtime (Data diisi otomatis dari app.js) -->
+      <div class="overflow-x-auto border border-gray-100 rounded-2xl shadow-inner">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-gray-50 border-b border-gray-100">
+              <th class="p-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Uraian Data</th>
+              <th class="p-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Kategori</th>
+              <th class="p-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Tanggal</th>
+              <th class="p-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Nominal</th>
+            </tr>
+          </thead>
+          <tbody id="tabelSnapshotBody">
+            <!-- Tempat merender baris data / status koneksi -->
+            <tr>
+              <td colspan="4" class="text-center py-8 text-sm font-medium text-gray-400">
+                <span class="animate-pulse flex items-center justify-center gap-2">
+                  ⏳ Menghubungkan Database...
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <button class="w-full bg-emerald-800 hover:bg-emerald-900 text-white font-bold py-3.5 rounded-2xl shadow-sm tracking-wide transition active:scale-[0.99] cursor-pointer">
+        ✓ SIMPAN CATATAN HARI INI
+      </button>
+    </section>
+
+  </main>
+
+  <!-- Hubungkan dengan File Logika Murni -->
+  <script src="app.js"></script>
+</body>
+</html>
