@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nota Supplier - Catatan Keuangan</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #f2f7f4; font-family: "Plus Jakarta Sans", sans-serif; color: #1a2f26; }
+        .modal-bg { background-color: rgba(14, 31, 23, 0.6); backdrop-filter: blur(4px); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #c3decb; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9ebd9f; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 8px 32px rgba(28, 64, 46, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+    </style>
+</head>
+<body class="p-3 md:p-6 pb-10">
+    <div id="toastContainer" class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-3 pointer-events-none w-full max-w-sm px-4"></div>
+
+    <div id="mainApp" class="hidden opacity-0 transition-opacity duration-500">
+        <!-- Navbar Integrated Bio Style -->
+        <nav class="max-w-6xl mx-auto pt-6 pb-8 px-2 flex justify-between items-center relative z-50">
+            <div class="flex items-center gap-2">
+                <svg class="w-8 h-8 text-[#1e5c33]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z" />
+                </svg>
+                <span class="font-bold text-xl text-[#1a2f26] tracking-tight">CatatanKeuangan</span>
+            </div>
+
+            <div class="flex items-center bg-[#f0f2ed]/80 backdrop-blur-md rounded-full px-2 py-1.5 border border-white/40 shadow-sm overflow-x-auto whitespace-nowrap">
+                <a href="index.html" class="px-5 py-2 text-xs font-bold text-gray-500 hover:text-[#1e5c33] transition uppercase tracking-widest">DASHBOARD</a>
+                <a href="produk.html" class="px-5 py-2 text-xs font-bold text-gray-500 hover:text-[#1e5c33] transition uppercase tracking-widest">PRODUK</a>
+                <a href="supplier.html" class="px-5 py-2 text-xs font-bold text-gray-700 hover:text-[#1e5c33] transition uppercase tracking-widest">NOTA SUPPLIER</a>
+                <a href="opname.html" class="px-5 py-2 text-xs font-bold text-gray-500 hover:text-[#1e5c33] transition uppercase tracking-widest">OPNAME</a>
+                <button onclick="bukaModalProfil()" class="ml-2 bg-[#1a2f26] hover:bg-[#12231b] text-white text-xs font-bold px-5 py-2.5 rounded-full transition uppercase tracking-widest shrink-0">
+                    AKUN SAYA
+                </button>
+            </div>
+        </nav>
+
+        <div class="fixed bottom-4 right-4 z-50 pointer-events-none">
+            <div id="statusKoneksi" class="px-4 py-2 flex items-center gap-1.5 text-[10px] font-bold text-gray-400 bg-white/80 backdrop-blur-md border border-gray-200 shadow-sm rounded-full uppercase tracking-widest pointer-events-auto">
+                <span class="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse"></span> CON...
+            </div>
+        </div>
+
+    <main class="max-w-7xl mx-auto space-y-6">
+        
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-[#1a2f26]">Riwayat Nota Supplier</h1>
+                <p class="text-sm text-gray-500 mt-1">Catat dan pantau transaksi pembelian ke supplier dengan sistem keranjang multi-produk.</p>
+            </div>
+        </div>
+
+        <!-- Metrics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="glass-card p-6 rounded-[1.5rem] flex flex-col relative overflow-hidden">
+                <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-gray-400"></div>
+                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Total Pembelian (Seluruhnya)</span>
+                <span class="text-2xl font-extrabold text-[#1a2f26] mt-2" id="metricTotalPembelian">Rp 0</span>
+            </div>
+            <div class="glass-card p-6 rounded-[1.5rem] flex flex-col relative overflow-hidden">
+                <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-[#4caf50]"></div>
+                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Total Terbayar (Lunas)</span>
+                <span class="text-2xl font-extrabold text-green-600 mt-2" id="metricTotalLunas">Rp 0</span>
+            </div>
+            <div class="glass-card p-6 rounded-[1.5rem] flex flex-col relative overflow-hidden">
+                <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-red-500"></div>
+                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Sisa Utang Supplier</span>
+                <span class="text-2xl font-extrabold text-red-600 mt-2" id="metricSisaUtang">Rp 0</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Form Input -->
+            <div class="lg:col-span-1">
+                <div class="glass-card p-6 rounded-[2rem] sticky top-24">
+                    <h2 class="text-lg font-bold text-[#1a2f26] mb-4">Tambah Nota Baru</h2>
+                    <form id="notaForm" class="space-y-4">
+                        <!-- TAHAP 1: INPUT BARANG KE KERANJANG -->
+                        <div class="bg-gray-50 p-4 rounded-[1.5rem] border border-gray-100">
+                            <h3 class="text-sm font-extrabold text-[#1a2f26] mb-3 flex items-center gap-2">
+                                <span>🛒</span> Keranjang Produk
+                            </h3>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase">Nama Produk</label>
+                                    <input type="text" id="inputProduk" list="produkSuggestions" placeholder="Ketik nama produk..." autocomplete="off" class="w-full bg-white border border-gray-200 p-2.5 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                                    <datalist id="produkSuggestions"></datalist>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase">Harga Beli Satuan</label>
+                                        <input type="number" id="inputHarga" min="0" placeholder="Rp" class="w-full bg-white border border-gray-200 p-2.5 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase">Jumlah/Unit</label>
+                                        <input type="number" id="inputQty" min="1" step="0.01" value="1" class="w-full bg-white border border-gray-200 p-2.5 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                                    </div>
+                                </div>
+                                <button type="button" id="btnTambahKeranjang" class="w-full bg-[#e8f3ec] hover:bg-[#cbe6d6] text-[#1e5c33] font-bold py-2.5 rounded-xl transition text-sm flex items-center justify-center space-x-2">
+                                    <span>➕ Tambah ke Daftar</span>
+                                </button>
+                            </div>
+
+                            <!-- Mini Table Draft -->
+                            <div class="mt-4 border border-gray-200 rounded-xl overflow-hidden bg-white">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-gray-50 text-gray-500 uppercase text-[10px]">
+                                        <tr>
+                                            <th class="p-2 pl-3 font-bold">Produk</th>
+                                            <th class="p-2 font-bold text-right">Subtotal</th>
+                                            <th class="p-2 font-bold text-center w-8">#</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="keranjangBody" class="divide-y divide-gray-100">
+                                        <tr><td colspan="3" class="p-3 text-center text-gray-400 italic font-bold">Keranjang kosong</td></tr>
+                                    </tbody>
+                                    <tfoot class="bg-gray-50 border-t border-gray-200">
+                                        <tr>
+                                            <td class="p-2 pl-3 font-bold text-gray-600 text-[10px] uppercase">Total Sementara:</td>
+                                            <td class="p-2 font-extrabold text-[#1a2f26] text-right" id="totalSementara">Rp 0</td>
+                                            <td></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- TAHAP 2: FINALISASI NOTA & STATUS -->
+                        <div class="space-y-3 pt-2">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Tanggal Nota</label>
+                                <input type="date" id="inputTanggal" required class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Nama Supplier</label>
+                                <input type="text" id="inputSupplier" required placeholder="Contoh: Agen Ko Handoko" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Status Pembayaran</label>
+                                <select id="inputStatus" required class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                                    <option value="Lunas">Lunas</option>
+                                    <option value="Utang">Utang</option>
+                                </select>
+                            </div>
+                            <div id="jatuhTempoContainer" class="hidden">
+                                <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Jatuh Tempo</label>
+                                <input type="date" id="inputJatuhTempo" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                            </div>
+                            <button type="submit" id="btnSimpanNota" disabled class="w-full bg-[#1e5c33] hover:bg-[#154626] text-white font-extrabold py-3.5 rounded-xl transition shadow-md uppercase tracking-wider text-sm mt-4 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span>💾 Konfirmasi & Simpan Nota</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="lg:col-span-2">
+                <div class="glass-card rounded-[2rem] overflow-hidden">
+                    <div class="overflow-x-auto p-2">
+                        <table class="w-full text-left text-sm" style="min-width: 700px">
+                            <thead class="bg-gray-50 text-gray-400 text-[10px] uppercase tracking-wider">
+                                <tr>
+                                    <th scope="col" class="p-3 pl-4 font-bold">Tanggal</th>
+                                    <th scope="col" class="p-3 font-bold">Nama Supplier</th>
+                                    <th scope="col" class="p-3 font-bold">Daftar Produk & Unit</th>
+                                    <th scope="col" class="p-3 text-right font-bold">Total Nota</th>
+                                    <th scope="col" class="p-3 text-center font-bold">Status</th>
+                                    <th scope="col" class="p-3 text-center font-bold w-24">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody" class="divide-y divide-gray-100">
+                                <tr>
+                                    <td colspan="6" class="p-4 text-center text-gray-400 animate-pulse font-bold">Memuat data...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    </div> <!-- End of mainApp -->
+
+    <!-- MODAL CICILAN -->
+    <div id="modalCicilan" class="fixed inset-0 modal-bg z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300" id="modalCicilanContent">
+            <div class="p-5 flex justify-between items-center text-white bg-[#1a2f26]">
+                <h3 class="font-extrabold text-lg">Bayar Cicilan</h3>
+                <button onclick="tutupModalCicilan()" class="text-white/70 hover:text-white text-2xl font-bold transition">&times;</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <input type="hidden" id="cicilanId">
+                <input type="hidden" id="cicilanTotal">
+                <input type="hidden" id="cicilanTerbayarSaatIni">
+                <input type="hidden" id="cicilanRiwayat">
+                
+                <div>
+                    <p class="text-xs text-gray-500 font-bold mb-1">Sisa Utang</p>
+                    <p id="cicilanSisaDisplay" class="font-extrabold text-[#1a2f26] text-xl">Rp 0</p>
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Jumlah Bayar</label>
+                    <input type="number" id="inputJumlahCicilan" placeholder="Rp" class="w-full bg-white border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Tanggal Pembayaran</label>
+                    <input type="date" id="inputTanggalCicilan" class="w-full bg-white border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                </div>
+                
+                <button id="btnSimpanCicilan" onclick="simpanCicilan()" class="w-full bg-[#1e5c33] hover:bg-[#154626] text-white font-bold py-3 rounded-xl transition shadow-sm text-sm flex items-center justify-center gap-2">
+                    💾 Konfirmasi Pembayaran
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PROFIL -->
+    <div id="modalProfil" class="fixed inset-0 modal-bg z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300" id="modalProfilContent">
+            <div class="p-5 flex justify-between items-center text-white bg-[#1a2f26]">
+                <h3 class="font-extrabold text-lg">Profil Akun</h3>
+                <button onclick="tutupModalProfil()" class="text-white/70 hover:text-white text-2xl font-bold transition">&times;</button>
+            </div>
+            <div class="p-6 space-y-5 text-center">
+                <div class="w-20 h-20 bg-green-100 text-green-700 rounded-full flex items-center justify-center font-bold text-4xl mx-auto mb-2 shadow-inner">👤</div>
+                <div>
+                    <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Email Saat Ini</p>
+                    <p id="profilEmailDisplay" class="font-extrabold text-[#1a2f26] text-lg">user@email.com</p>
+                    <p id="profilProviderDisplay" class="text-xs text-gray-500 mt-1 font-bold bg-gray-100 inline-block px-2 py-0.5 rounded-md"></p>
+                </div>
+                <div class="border-t border-gray-100 pt-5 text-left space-y-3">
+                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 mb-3" id="gantiPasswordContainer">
+                        <p class="text-xs text-gray-500 font-bold mb-2">Ganti Password Langsung</p>
+                        <input type="password" id="profilNewPassword" placeholder="Masukkan password baru" class="w-full bg-white border border-gray-200 p-2.5 rounded-xl outline-none text-sm font-bold text-gray-700 mb-2 focus:border-green-400">
+                        <button id="btnSimpanPassword" onclick="handleUpdatePasswordUI()" class="w-full bg-[#1e5c33] hover:bg-[#154626] text-white font-bold py-2.5 rounded-xl transition shadow-sm text-sm">Simpan Password Baru</button>
+                    </div>
+                    <p class="text-xs text-gray-500 font-bold mt-4">Menu Akun</p>
+                    <button onclick="handleLogout()" class="w-full flex items-center justify-between p-3 rounded-xl bg-red-50 hover:bg-red-100 transition border border-red-100 group">
+                        <span class="text-sm font-bold text-red-600 group-hover:text-red-700">Keluar (Logout)</span>
+                        <svg class="w-4 h-4 text-red-400 group-hover:text-red-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBKaa7F02csop4ocmmTwYksEE-oTKVkV0Q",
+            authDomain: "buku-besar-keuangan.firebaseapp.com",
+            projectId: "buku-besar-keuangan",
+            storageBucket: "buku-besar-keuangan.firebasestorage.app",
+            messagingSenderId: "153517228065",
+            appId: "1:153517228065:web:590991b36a11e28bc1e360",
+            measurementId: "G-QDVYYPH7DH",
+            databaseURL: "https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+        let currentUser = null;
+
+        window.pushNotification = function (pesan, jenis = "sukses") {
+            const container = document.getElementById("toastContainer");
+            const toast = document.createElement("div");
+            let bgClass = "bg-[#1a2f26] border border-green-800 text-white";
+            let icon = `<svg class="w-5 h-5 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+
+            if (jenis === "error" || jenis === "peringatan") {
+                bgClass = "bg-red-900 border border-red-800 text-white";
+                icon = `<svg class="w-5 h-5 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
+            }
+            toast.className = `${bgClass} p-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 opacity-0 -translate-y-4 pointer-events-auto font-bold text-xs tracking-wide`;
+            toast.innerHTML = `${icon} <span>${pesan}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.remove("opacity-0", "-translate-y-4");
+                toast.classList.add("opacity-100", "translate-y-0");
+            }, 10);
+            setTimeout(() => {
+                toast.classList.remove("opacity-100", "translate-y-0");
+                toast.classList.add("opacity-0", "-translate-y-2");
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3500);
+        };
+
+        const connectedRef = ref(db, ".info/connected");
+        onValue(connectedRef, (snap) => {
+            const statusEl = document.getElementById("statusKoneksi");
+            if (snap.val() === true) {
+                statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"></span> ONLINE`;
+            } else {
+                statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse"></span> CON...`;
+            }
+        });
+
+        window.bukaModalProfil = function () {
+            const modal = document.getElementById("modalProfil");
+            const content = document.getElementById("modalProfilContent");
+            modal.classList.remove("hidden");
+            if (currentUser) {
+                document.getElementById("profilEmailDisplay").innerText = currentUser.email;
+                let provider = currentUser.providerData[0]?.providerId || "password";
+                document.getElementById("profilProviderDisplay").innerText = provider === "google.com" ? "Google Account" : "Email/Password";
+                if (provider === "google.com") {
+                    document.getElementById("gantiPasswordContainer").classList.add("hidden");
+                } else {
+                    document.getElementById("gantiPasswordContainer").classList.remove("hidden");
+                }
+            }
+            setTimeout(() => {
+                modal.classList.remove("opacity-0");
+                content.classList.remove("scale-95");
+                content.classList.add("scale-100");
+            }, 10);
+        };
+
+        window.tutupModalProfil = function () {
+            const modal = document.getElementById("modalProfil");
+            const content = document.getElementById("modalProfilContent");
+            modal.classList.add("opacity-0");
+            content.classList.remove("scale-100");
+            content.classList.add("scale-95");
+            setTimeout(() => {
+                modal.classList.add("hidden");
+            }, 300);
+        };
+
+        window.bukaModalCicilan = function(id, total, terbayar, riwayatStr) {
+            total = parseFloat(total) || 0;
+            terbayar = parseFloat(terbayar) || 0;
+            const sisa = total - terbayar;
+            
+            document.getElementById('cicilanId').value = id;
+            document.getElementById('cicilanTotal').value = total;
+            document.getElementById('cicilanTerbayarSaatIni').value = terbayar;
+            document.getElementById('cicilanRiwayat').value = riwayatStr || '[]';
+            document.getElementById('cicilanSisaDisplay').textContent = formatRupiah(sisa);
+            document.getElementById('inputJumlahCicilan').value = '';
+            document.getElementById('inputTanggalCicilan').valueAsDate = new Date();
+            
+            const modal = document.getElementById("modalCicilan");
+            const content = document.getElementById("modalCicilanContent");
+            modal.classList.remove("hidden");
+            setTimeout(() => {
+                modal.classList.remove("opacity-0");
+                content.classList.remove("scale-95");
+                content.classList.add("scale-100");
+            }, 10);
+        };
+
+        window.tutupModalCicilan = function() {
+            const modal = document.getElementById("modalCicilan");
+            const content = document.getElementById("modalCicilanContent");
+            modal.classList.add("opacity-0");
+            content.classList.remove("scale-100");
+            content.classList.add("scale-95");
+            setTimeout(() => {
+                modal.classList.add("hidden");
+            }, 300);
+        };
+
+        window.simpanCicilan = async function() {
+            const id = document.getElementById('cicilanId').value;
+            const total = parseFloat(document.getElementById('cicilanTotal').value);
+            const terbayarSaatIni = parseFloat(document.getElementById('cicilanTerbayarSaatIni').value);
+            const bayarBaru = parseFloat(document.getElementById('inputJumlahCicilan').value);
+            const tanggalCicilan = document.getElementById('inputTanggalCicilan').value;
+            const riwayatStr = document.getElementById('cicilanRiwayat').value;
+            
+            if (isNaN(bayarBaru) || bayarBaru <= 0) {
+                window.pushNotification("Masukkan jumlah pembayaran yang valid!", "error");
+                return;
+            }
+            
+            const btn = document.getElementById("btnSimpanCicilan");
+            const oldText = btn.innerHTML;
+            btn.innerHTML = "Menyimpan...";
+            btn.disabled = true;
+            
+            let terbayarBaru = terbayarSaatIni + bayarBaru;
+            let statusBaru = 'Utang';
+            let jatuhTempoBaru = undefined;
+            
+            if (terbayarBaru >= total) {
+                terbayarBaru = total;
+                statusBaru = 'Lunas';
+                jatuhTempoBaru = '-';
+            }
+
+            let riwayat = [];
+            try {
+                riwayat = JSON.parse(decodeURIComponent(riwayatStr));
+                if (!Array.isArray(riwayat)) riwayat = [];
+            } catch(e) { }
+
+            let finalTanggal = new Date().toISOString();
+            if (tanggalCicilan) {
+                const [yyyy, mm, dd] = tanggalCicilan.split('-');
+                const d = new Date();
+                d.setFullYear(yyyy, mm - 1, dd);
+                finalTanggal = d.toISOString();
+            }
+
+            riwayat.push({
+                tanggal: finalTanggal,
+                nominal: bayarBaru
+            });
+            
+            try {
+                const payload = { 
+                    terbayar: terbayarBaru,
+                    status: statusBaru,
+                    riwayat_cicilan: riwayat
+                };
+                if (jatuhTempoBaru) {
+                    payload.jatuh_tempo = jatuhTempoBaru;
+                }
+                
+                await fetch(`https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/nota_supplier/${id}.json`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                window.pushNotification("Pembayaran cicilan berhasil disimpan.");
+                window.tutupModalCicilan();
+                fetchData();
+            } catch (error) {
+                console.error("Gagal simpan cicilan:", error);
+                window.pushNotification("Gagal menyimpan cicilan.", "error");
+            } finally {
+                btn.innerHTML = oldText;
+                btn.disabled = false;
+            }
+        };
+
+        window.handleLogout = function () {
+            signOut(auth).then(() => {
+                window.location.href = "login.html";
+            }).catch((error) => {
+                console.error("Logout error", error);
+            });
+        };
+
+        window.handleUpdatePasswordUI = async function () {
+            const newPass = document.getElementById("profilNewPassword").value;
+            if (!newPass || newPass.length < 6) {
+                window.pushNotification("Password minimal 6 karakter!", "error");
+                return;
+            }
+            const btn = document.getElementById("btnSimpanPassword");
+            const oldText = btn.innerHTML;
+            btn.innerHTML = "Menyimpan...";
+            btn.disabled = true;
+            try {
+                await updatePassword(currentUser, newPass);
+                window.pushNotification("Password berhasil diubah!");
+                document.getElementById("profilNewPassword").value = "";
+                window.tutupModalProfil();
+            } catch (error) {
+                console.error(error);
+                window.pushNotification("Gagal ubah password. Coba login ulang.", "error");
+            } finally {
+                btn.innerHTML = oldText;
+                btn.disabled = false;
+            }
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = "login.html";
+            } else {
+                currentUser = user;
+                document.getElementById('mainApp').classList.remove('hidden');
+                setTimeout(() => {
+                    document.getElementById('mainApp').classList.remove('opacity-0');
+                }, 50);
+                fetchData();
+            }
+        });
+        
+        const URL_NOTA = 'https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/nota_supplier.json';
+        const URL_HARGA = 'https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/harga_produk.json';
+        const URL_RIWAYAT_STOK = 'https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/riwayat_stok.json';
+
+        const formatRupiah = (number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
+
+        const formatDate = (dateString) => {
+            if (!dateString) return '-';
+            const d = new Date(dateString);
+            return new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }).format(d);
+        };
+
+        const form = document.getElementById('notaForm');
+        const inputStatus = document.getElementById('inputStatus');
+        const jatuhTempoContainer = document.getElementById('jatuhTempoContainer');
+        const inputJatuhTempo = document.getElementById('inputJatuhTempo');
+        const tableBody = document.getElementById('tableBody');
+        const datalist = document.getElementById('produkSuggestions');
+
+        const metricTotalPembelian = document.getElementById('metricTotalPembelian');
+        const metricTotalLunas = document.getElementById('metricTotalLunas');
+        const metricSisaUtang = document.getElementById('metricSisaUtang');
+
+        // KERANJANG SYSTEM LOGIC
+        // KERANJANG SYSTEM LOGIC
+        let keranjangItem = [];
+        let existingProducts = {}; // Simpan id dan stok produk yang sudah ada
+
+        const renderKeranjang = () => {
+            const tbody = document.getElementById('keranjangBody');
+            const totalSementaraEl = document.getElementById('totalSementara');
+            const btnSimpanNota = document.getElementById('btnSimpanNota');
+
+            if (keranjangItem.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="p-3 text-center text-gray-400 italic font-bold">Keranjang kosong</td></tr>`;
+                totalSementaraEl.textContent = 'Rp 0';
+                btnSimpanNota.disabled = true;
+                return;
+            }
+
+            let total = 0;
+            tbody.innerHTML = '';
+            keranjangItem.forEach((item, index) => {
+                const subtotal = item.unit * item.harga_beli;
+                total += subtotal;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-2 pl-3">
+                        <div class="font-bold text-gray-700 text-[11px]">${item.produk}</div>
+                        <div class="text-[10px] text-gray-500">${item.unit} x ${formatRupiah(item.harga_beli)}</div>
+                    </td>
+                    <td class="p-2 text-right font-bold text-gray-800 text-[11px]">${formatRupiah(subtotal)}</td>
+                    <td class="p-2 text-center">
+                        <button type="button" onclick="window.hapusItemKeranjang(${index})" class="text-red-400 hover:text-red-600 font-bold p-1 transition-colors">❌</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            totalSementaraEl.textContent = formatRupiah(total);
+            btnSimpanNota.disabled = false;
+        };
+
+        window.hapusItemKeranjang = (index) => {
+            keranjangItem.splice(index, 1);
+            renderKeranjang();
+        };
+
+        document.getElementById('btnTambahKeranjang').addEventListener('click', () => {
+            const produk = document.getElementById('inputProduk').value.trim();
+            const qty = parseFloat(document.getElementById('inputQty').value);
+            const harga = parseFloat(document.getElementById('inputHarga').value);
+
+            if (!produk) {
+                window.pushNotification("Harap isi nama produk!", "error");
+                document.getElementById('inputProduk').focus();
+                return;
+            }
+            if (isNaN(harga) || harga < 0) {
+                window.pushNotification("Harap isi harga satuan dengan benar!", "error");
+                document.getElementById('inputHarga').focus();
+                return;
+            }
+            if (isNaN(qty) || qty <= 0) {
+                window.pushNotification("Harap isi jumlah/unit dengan benar!", "error");
+                document.getElementById('inputQty').focus();
+                return;
+            }
+
+            keranjangItem.push({
+                produk: produk,
+                unit: qty,
+                harga_beli: harga
+            });
+
+            // Reset phase 1 inputs
+            document.getElementById('inputProduk').value = '';
+            document.getElementById('inputQty').value = '1';
+            document.getElementById('inputHarga').value = '';
+            document.getElementById('inputProduk').focus();
+
+            renderKeranjang();
+        });
+
+
+        inputStatus.addEventListener('change', (e) => {
+            if (e.target.value === 'Utang') {
+                jatuhTempoContainer.classList.remove('hidden');
+                inputJatuhTempo.required = true;
+                inputJatuhTempo.value = '';
+            } else {
+                jatuhTempoContainer.classList.add('hidden');
+                inputJatuhTempo.required = false;
+                inputJatuhTempo.value = '-';
+            }
+        });
+
+        const fetchData = async () => {
+            try {
+                const ts = new Date().getTime();
+                const [resNota, resHarga] = await Promise.all([
+                    fetch(URL_NOTA + '?ts=' + ts),
+                    fetch(URL_HARGA + '?ts=' + ts)
+                ]);
+                
+                const dataNota = await resNota.json() || {};
+                const dataHarga = await resHarga.json() || {};
+
+                processNotaData(dataNota);
+                processHargaData(dataHarga);
+                
+            } catch (error) {
+                console.error("Gagal mengambil data:", error);
+                tableBody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-rose-500 font-bold">Gagal memuat data dari Firebase.</td></tr>`;
+            }
+        };
+
+        const processHargaData = (data) => {
+            existingProducts = {};
+            const products = new Set();
+            
+            Object.entries(data).forEach(([id, item]) => {
+                if (!item) return;
+                const namaProduk = item.nama || item.produk;
+                if (namaProduk && String(namaProduk).trim() !== '' && namaProduk !== '-') {
+                    const cleanName = namaProduk.trim();
+                    products.add(cleanName);
+                    // Simpan data produk yang ada untuk referensi saat simpan nota
+                    existingProducts[cleanName.toLowerCase()] = {
+                        id: id,
+                        stok: parseFloat(item.stok) || 0,
+                        ...item
+                    };
+                }
+            });
+
+            datalist.innerHTML = '';
+            products.forEach(prod => {
+                const option = document.createElement('option');
+                option.value = prod;
+                datalist.appendChild(option);
+            });
+        };
+
+        const processNotaData = (data) => {
+            const rawData = Object.entries(data).map(([id, val]) => ({ id, ...val }));
+            rawData.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+
+            renderTable(rawData);
+            calculateMetrics(rawData);
+        };
+
+        const renderTable = (data) => {
+            if (data.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-slate-500 font-bold">Belum ada transaksi pembelian supplier.</td></tr>`;
+                return;
+            }
+
+            tableBody.innerHTML = '';
+            data.forEach(item => {
+                // Fallback support for old data scheme
+                const total = parseFloat(item.total_nota || item.total) || 0;
+                let terbayar = parseFloat(item.terbayar) || 0;
+                const isLunas = item.status === 'Lunas';
+
+                // For old data which is Lunas but doesn't have terbayar
+                if (isLunas && terbayar === 0) {
+                    terbayar = total;
+                }
+
+                const riwayatStr = encodeURIComponent(JSON.stringify(item.riwayat_cicilan || []));
+                
+                let riwayatHTML = '';
+                if (item.riwayat_cicilan && Array.isArray(item.riwayat_cicilan) && item.riwayat_cicilan.length > 0) {
+                    const listRiwayat = item.riwayat_cicilan.map((r, rIndex) => `
+                        <div class="flex justify-between items-center w-full text-[9px] text-gray-500 border-b border-gray-100 last:border-0 py-1 group">
+                            <span class="text-left">${formatDate(r.tanggal)}</span>
+                            <div class="flex items-center gap-1">
+                                <span class="font-bold text-right text-green-600">+${formatRupiah(r.nominal)}</span>
+                                <button onclick="window.hapusRiwayatCicilan('${item.id}', ${rIndex}, '${riwayatStr}', ${r.nominal}, ${terbayar})" class="text-red-400 hover:text-red-600 px-1 opacity-0 group-hover:opacity-100 transition-opacity" title="Batal Pembayaran ini">❌</button>
+                            </div>
+                        </div>
+                    `).join('');
+                    riwayatHTML = `<div class="w-full mt-2 p-2 bg-gray-50 rounded-lg border border-gray-200 max-h-24 overflow-y-auto shadow-inner" style="-ms-overflow-style: none; scrollbar-width: none;">${listRiwayat}</div>`;
+                }
+
+                let statusBadge = '';
+                if (isLunas) {
+                    statusBadge = `<div class="flex flex-col items-center gap-1.5 w-full max-w-[140px] mx-auto">
+                        <span class="bg-green-100 text-green-700 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Lunas</span>
+                        ${riwayatHTML}
+                    </div>`;
+                } else {
+                    const progressPersen = total > 0 ? Math.min(100, Math.round((terbayar / total) * 100)) : 0;
+                    statusBadge = `<div class="flex flex-col items-center gap-1.5 w-full max-w-[140px] mx-auto">
+                         <span class="bg-red-100 text-red-700 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Utang</span>
+                         <div class="w-full bg-gray-200 rounded-full h-1.5">
+                             <div class="bg-blue-500 h-1.5 rounded-full" style="width: ${progressPersen}%"></div>
+                         </div>
+                         <span class="text-[9px] text-gray-500 font-bold whitespace-nowrap">Sisa: ${formatRupiah(total - terbayar)}</span>
+                         <span class="text-[9px] text-gray-400 font-bold whitespace-nowrap">Jatuh Tempo: ${item.jatuh_tempo !== '-' ? formatDate(item.jatuh_tempo) : '-'}</span>
+                         ${riwayatHTML}
+                       </div>`;
+                }
+
+                let actionButtons = '';
+                if (!isLunas) {
+                    actionButtons += `<button onclick="window.bukaModalCicilan('${item.id}', ${total}, ${terbayar}, '${riwayatStr}')" class="text-[11px] bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold px-3 py-1.5 rounded-lg transition-colors mb-1.5 w-full text-center tracking-wide flex items-center justify-center gap-1">💸 Bayar Cicilan</button>`;
+                    actionButtons += `<button onclick="window.markLunas('${item.id}', ${total}, ${terbayar}, '${riwayatStr}')" class="text-[11px] bg-orange-100 hover:bg-orange-200 text-orange-800 font-bold px-3 py-1.5 rounded-lg transition-colors mb-1.5 w-full text-center tracking-wide">✏️ Tandai Lunas</button>`;
+                } else if (item.riwayat_cicilan && item.riwayat_cicilan.length > 0) {
+                    actionButtons += `<button onclick="window.batalLunas('${item.id}', ${terbayar}, '${riwayatStr}')" class="text-[11px] bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-bold px-3 py-1.5 rounded-lg transition-colors mb-1.5 w-full text-center tracking-wide">↩️ Batal Lunas</button>`;
+                }
+                actionButtons += `<button onclick="window.hapusNota('${item.id}')" class="text-[11px] bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-700 font-bold px-3 py-1.5 rounded-lg transition-colors w-full text-center tracking-wide">🗑️ Hapus</button>`;
+
+                let itemsHtml = '';
+                if (item.items && Array.isArray(item.items)) {
+                    itemsHtml = item.items.map(i => `&bull; ${i.produk} <span class="text-gray-400">(${i.unit} Unit)</span>`).join('<br>');
+                } else if (item.produk) {
+                    // Fallback for old data without items array
+                    itemsHtml = `&bull; ${item.produk} <span class="text-gray-400">(${item.qty || 0} Unit)</span>`;
+                }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-3 pl-4 align-top">
+                        <div class="text-xs font-bold text-gray-500">${formatDate(item.tanggal)}</div>
+                    </td>
+                    <td class="p-3 align-top">
+                        <div class="text-sm font-extrabold text-[#1a2f26]">${item.supplier}</div>
+                    </td>
+                    <td class="p-3 align-top">
+                        <div class="text-[11px] font-bold text-gray-700 leading-relaxed">${itemsHtml}</div>
+                    </td>
+                    <td class="p-3 text-right align-top">
+                        <div class="text-sm font-extrabold text-[#1a2f26]">${formatRupiah(total)}</div>
+                    </td>
+                    <td class="p-3 text-center align-top">
+                        ${statusBadge}
+                    </td>
+                    <td class="p-3 text-center align-top">
+                        <div class="flex flex-col items-center justify-center max-w-[120px] mx-auto">
+                            ${actionButtons}
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        };
+
+        const calculateMetrics = (data) => {
+            let totalPembelian = 0;
+            let totalLunas = 0;
+            let sisaUtang = 0;
+
+            data.forEach(item => {
+                const total = parseFloat(item.total_nota || item.total) || 0;
+                let terbayar = parseFloat(item.terbayar) || 0;
+                if (item.status === 'Lunas' && terbayar === 0) terbayar = total;
+
+                totalPembelian += total;
+
+                if (item.status === 'Lunas') {
+                    totalLunas += total;
+                } else if (item.status === 'Utang') {
+                    totalLunas += terbayar; // Termasuk yang dicicil
+                    sisaUtang += (total - terbayar);
+                }
+            });
+
+            metricTotalPembelian.textContent = formatRupiah(totalPembelian);
+            metricTotalLunas.textContent = formatRupiah(totalLunas);
+            metricSisaUtang.textContent = formatRupiah(sisaUtang);
+        };
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (keranjangItem.length === 0) {
+                window.pushNotification("Keranjang masih kosong!", "error");
+                return;
+            }
+
+            const submitBtn = document.getElementById('btnSimpanNota');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.innerHTML = `<span>Menyimpan...</span>`;
+            submitBtn.disabled = true;
+
+            const tanggal = document.getElementById('inputTanggal').value;
+            const supplier = document.getElementById('inputSupplier').value;
+            const status = inputStatus.value;
+            const jatuh_tempo = status === 'Utang' ? inputJatuhTempo.value : "-";
+
+            const total_nota = keranjangItem.reduce((sum, item) => sum + (item.unit * item.harga_beli), 0);
+
+            const payloadNota = {
+                tanggal: tanggal,
+                supplier: supplier,
+                status: status,
+                jatuh_tempo: jatuh_tempo,
+                total_nota: total_nota,
+                terbayar: status === 'Lunas' ? total_nota : 0,
+                items: keranjangItem
+            };
+
+            try {
+                // 1. Simpan nota induk ke /nota_supplier.json
+                await fetch(URL_NOTA, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payloadNota)
+                });
+
+                // 2. Simpan atau update produk ke /harga_produk.json
+                // 3. Simpan riwayat stok ke /riwayat_stok.json
+                const promises = [];
+                keranjangItem.forEach(item => {
+                    const prodNameLower = item.produk.trim().toLowerCase();
+                    const existingProduct = existingProducts[prodNameLower];
+
+                    if (existingProduct) {
+                        // Jika produk sudah ada, update stok dan harga beli
+                        const newStok = existingProduct.stok + parseFloat(item.unit);
+                        promises.push(fetch(`https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/harga_produk/${existingProduct.id}.json`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                stok: newStok,
+                                hargaBeli: item.harga_beli
+                            })
+                        }));
+                    } else {
+                        // Jika produk baru, buat entri baru yang sesuai format daftar produk
+                        const payloadHargaBaru = {
+                            nama: item.produk.trim(),
+                            stok: parseFloat(item.unit),
+                            hargaBeli: item.harga_beli,
+                            kategori: "-",
+                            unit: "-",
+                            hargaJual: 0,
+                            isNewStock: true,
+                            tanggal: tanggal // keep for backward compatibility if needed
+                        };
+                        promises.push(fetch(URL_HARGA, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payloadHargaBaru)
+                        }));
+                    }
+
+                    const payloadStok = {
+                        tanggal: tanggal,
+                        produk: item.produk,
+                        jumlah: parseFloat(item.unit),
+                        tipe: "Masuk",
+                        keterangan: "Pembelian Grosir dari Supplier: " + supplier
+                    };
+                    promises.push(fetch(URL_RIWAYAT_STOK, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payloadStok)
+                    }));
+                });
+                await Promise.all(promises);
+
+                form.reset();
+                keranjangItem = [];
+                renderKeranjang();
+                
+                document.getElementById('inputTanggal').valueAsDate = new Date();
+                jatuhTempoContainer.classList.add('hidden');
+                inputJatuhTempo.required = false;
+                inputJatuhTempo.value = '-';
+                fetchData(); 
+                window.pushNotification("Data nota berhasil disimpan.");
+            } catch (error) {
+                console.error("Gagal menyimpan data:", error);
+                window.pushNotification("Terjadi kesalahan saat menyimpan data.", "error");
+            } finally {
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        window.batalLunas = async (id, terbayar, riwayatStr) => {
+            if (!confirm("Batalkan status lunas untuk transaksi ini?")) return;
+            try {
+                let riwayat = [];
+                if (riwayatStr) {
+                    try { riwayat = JSON.parse(decodeURIComponent(riwayatStr)); } catch(e){}
+                }
+                
+                // Menghapus riwayat pelunasan terakhir jika itu merupakan sisa pelunasan dari Tandai Lunas
+                if (riwayat.length > 0) {
+                   riwayat.pop();
+                }
+
+                // Kalkulasi ulang terbayar
+                let newTerbayar = riwayat.reduce((sum, item) => sum + item.nominal, 0);
+
+                await fetch(`https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/nota_supplier/${id}.json`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'Utang', terbayar: newTerbayar, riwayat_cicilan: riwayat })
+                });
+                window.pushNotification("Status berhasil diupdate menjadi Utang.");
+                fetchData();
+            } catch (error) {
+                console.error("Gagal update status:", error);
+                window.pushNotification("Gagal membatalkan status pelunasan.", "error");
+            }
+        };
+
+        window.hapusRiwayatCicilan = async (id, rIndex, riwayatStr, nominal, terbayarSaatIni) => {
+            if (!confirm(`Apakah Anda yakin ingin membatalkan pembayaran cicilan sebesar ${formatRupiah(nominal)}?`)) return;
+            
+            try {
+                let riwayat = [];
+                if (riwayatStr) {
+                    try { riwayat = JSON.parse(decodeURIComponent(riwayatStr)); } catch(e){}
+                }
+                
+                riwayat.splice(rIndex, 1);
+                
+                let terbayarBaru = riwayat.reduce((sum, item) => sum + item.nominal, 0);
+                
+                await fetch(`https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/nota_supplier/${id}.json`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        terbayar: terbayarBaru, 
+                        riwayat_cicilan: riwayat,
+                        status: 'Utang' // Asumsikan jika ada pembatalan cicilan, otomatis balik ke utang (bisa disesuaikan jika sisa masih = total, tapi lebih aman set utang)
+                    })
+                });
+                
+                window.pushNotification("Pembayaran cicilan berhasil dibatalkan.");
+                fetchData();
+            } catch (error) {
+                console.error("Gagal batalkan cicilan:", error);
+                window.pushNotification("Gagal membatalkan pembayaran cicilan.", "error");
+            }
+        };
+
+        window.markLunas = async (id, total, terbayar, riwayatStr) => {
+            if (!confirm("Tandai transaksi ini sebagai Lunas?")) return;
+            try {
+                let riwayat = [];
+                if (riwayatStr) {
+                    try { riwayat = JSON.parse(decodeURIComponent(riwayatStr)); } catch(e){}
+                }
+                
+                total = parseFloat(total) || 0;
+                terbayar = parseFloat(terbayar) || 0;
+                const sisa = total - terbayar;
+                
+                if (sisa > 0) {
+                    riwayat.push({
+                        tanggal: new Date().toISOString(),
+                        nominal: sisa
+                    });
+                }
+
+                await fetch(`https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/nota_supplier/${id}.json`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'Lunas', jatuh_tempo: '-', terbayar: total, riwayat_cicilan: riwayat })
+                });
+                window.pushNotification("Status berhasil diupdate menjadi Lunas.");
+                fetchData();
+            } catch (error) {
+                console.error("Gagal update status:", error);
+                window.pushNotification("Gagal mengupdate status pelunasan.", "error");
+            }
+        };
+
+        window.hapusNota = async (id) => {
+            if (!confirm("Apakah Anda yakin ingin menghapus data nota ini?")) return;
+            try {
+                await fetch(`https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/nota_supplier/${id}.json`, {
+                    method: 'DELETE'
+                });
+                window.pushNotification("Data nota berhasil dihapus.");
+                fetchData();
+            } catch (error) {
+                console.error("Gagal menghapus data:", error);
+                window.pushNotification("Gagal menghapus data nota.", "error");
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('inputTanggal').valueAsDate = new Date();
+            if (inputStatus.value === 'Lunas') {
+                inputJatuhTempo.value = '-';
+            }
+            
+            // Fetch produk untuk datalist autocomplete saat awal dimuat (sebelum login auth fetch data lengkap)
+            fetch(URL_HARGA + '?ts=' + new Date().getTime())
+                .then(res => res.json())
+                .then(data => {
+                    if (data) processHargaData(data);
+                })
+                .catch(err => console.error('Gagal memuat rekomendasi produk', err));
+        });
+    </script>
+</body>
+</html>

@@ -69,167 +69,34 @@
       class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-3 pointer-events-none w-full max-w-sm px-4"
     ></div>
 
-    <!-- LOGIN SCREEN -->
-    <div
-      id="loginScreen"
-      class="fixed inset-0 z-[60] bg-gradient-to-br from-[#1a2f26] via-[#101f18] to-black flex items-center justify-center p-4 transition-opacity duration-500"
-    >
-      <div
-        class="absolute top-0 right-0 w-96 h-96 bg-green-500/10 rounded-full blur-3xl -z-10 mix-blend-screen"
-      ></div>
-      <div
-        class="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -z-10 mix-blend-screen"
-      ></div>
-
-      <div
-        class="backdrop-blur-xl bg-white/10 border border-white/20 p-8 rounded-[2rem] w-full max-w-md shadow-2xl relative z-10"
-      >
-        <div class="text-center mb-8">
-          <div
-            class="w-16 h-16 bg-[#1e5c33] rounded-full flex items-center justify-center text-white text-3xl shadow-lg mx-auto mb-4"
-          >
-            💰
-          </div>
-          <h1 class="text-2xl font-extrabold text-white tracking-tight">
-            Catatan Keuangan
-          </h1>
-          <p class="text-green-100/70 text-sm mt-1">
-            Masuk untuk mengelola dana
-          </p>
-        </div>
-
-        <div class="flex bg-white/5 rounded-xl p-1 mb-6">
-          <button
-            id="tabLogin"
-            onclick="switchTab('login')"
-            class="flex-1 py-2 text-sm font-bold text-white bg-[#1e5c33] rounded-lg shadow-sm transition"
-          >
-            Masuk
-          </button>
-          <button
-            id="tabRegister"
-            onclick="switchTab('register')"
-            class="flex-1 py-2 text-sm font-bold text-white/50 hover:text-white transition"
-          >
-            Daftar
-          </button>
-        </div>
-
-        <div class="space-y-4">
-          <div>
-            <label class="block text-xs font-bold text-green-100/70 mb-1"
-              >Email</label
-            >
-            <input
-              type="email"
-              id="authEmail"
-              class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-white text-sm focus:border-green-400 focus:bg-white/10 transition"
-              placeholder="user@email.com"
-            />
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-green-100/70 mb-1"
-              >Password</label
-            >
-            <input
-              type="password"
-              id="authPassword"
-              class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-white text-sm focus:border-green-400 focus:bg-white/10 transition"
-              placeholder="••••••••"
-            />
-            <div id="lupaPasswordContainer" class="text-right mt-1">
-              <button onclick="handleResetPassword()" class="text-[10px] text-green-100/70 hover:text-white transition font-bold">Lupa Password?</button>
-            </div>
-          </div>
-
-          <button
-            id="btnAuth"
-            onclick="handleAuthAction()"
-            class="w-full bg-[#1e5c33] hover:bg-[#154626] text-white font-extrabold py-3.5 rounded-xl transition shadow-[0_8px_20px_rgba(30,92,51,0.4)] uppercase tracking-wider text-sm mt-6"
-          >
-            MASUK
-          </button>
-
-          <div class="relative flex py-5 items-center">
-            <div class="flex-grow border-t border-white/10"></div>
-            <span class="flex-shrink-0 mx-4 text-white/50 text-xs font-bold"
-              >ATAU</span
-            >
-            <div class="flex-grow border-t border-white/10"></div>
-          </div>
-
-          <button
-            onclick="handleGoogleLogin()"
-            class="w-full bg-white text-gray-800 hover:bg-gray-100 font-extrabold py-3.5 rounded-xl transition shadow-md flex items-center justify-center gap-3 text-sm"
-          >
-            <svg class="w-5 h-5" viewBox="0 0 24 24">
-              <path
-                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                fill="#4285F4"
-              />
-              <path
-                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                fill="#34A853"
-              />
-              <path
-                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                fill="#FBBC05"
-              />
-              <path
-                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                fill="#EA4335"
-              />
-            </svg>
-            Lanjutkan dengan Google
-          </button>
-        </div>
-      </div>
-    </div>
-
     <div id="mainApp" class="hidden opacity-0 transition-opacity duration-500">
-      <div
-        class="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 px-2"
-      >
-        <div
-          class="flex items-center justify-between md:justify-start gap-3 w-full md:w-auto"
-        >
-          <div class="flex items-center gap-3">
-            <div
-              class="w-10 h-10 bg-[#1e5c33] rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md"
-            >
-              S
-            </div>
-            <h1 class="text-xl font-extrabold tracking-tight">
-              Catatan Keuangan
-            </h1>
-          </div>
+      
+      <!-- NAVBAR INTEGRATED BIO STYLE -->
+      <nav class="max-w-6xl mx-auto pt-6 pb-8 px-2 flex justify-between items-center relative z-50">
+        <div class="flex items-center gap-2">
+          <svg class="w-8 h-8 text-[#1e5c33]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z" />
+          </svg>
+          <span class="font-bold text-xl text-[#1a2f26] tracking-tight">CatatanKeuangan</span>
         </div>
 
-        <div
-          class="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto"
-        >
-          <div
-            id="statusKoneksi"
-            class="text-xs font-bold text-gray-400 flex items-center gap-2 bg-white px-3 py-1.5 rounded-full shadow-sm"
-          >
-            <span
-              class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"
-            ></span>
-            Menyambung...
-          </div>
-          <div
-            class="flex items-center gap-3 bg-white px-3 py-1.5 rounded-full shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 transition"
-            onclick="bukaModalProfil()"
-          >
-            <div class="w-6 h-6 bg-green-100 text-green-700 rounded-full flex items-center justify-center font-bold text-xs">
-              👤
-            </div>
-            <span id="userEmailDisplay" class="text-xs font-bold text-gray-600"
-              >user@email.com</span
-            >
-          </div>
+        <div class="flex items-center bg-[#f0f2ed]/80 backdrop-blur-md rounded-full px-2 py-1.5 border border-white/40 shadow-sm overflow-x-auto whitespace-nowrap">
+          <a href="index.html" class="px-5 py-2 text-xs font-bold text-gray-700 hover:text-[#1e5c33] transition uppercase tracking-widest">DASHBOARD</a>
+          <a href="produk.html" class="px-5 py-2 text-xs font-bold text-gray-500 hover:text-[#1e5c33] transition uppercase tracking-widest">PRODUK</a>
+          <a href="supplier.html" class="px-5 py-2 text-xs font-bold text-gray-500 hover:text-[#1e5c33] transition uppercase tracking-widest">NOTA SUPPLIER</a>
+          <a href="opname.html" class="px-5 py-2 text-xs font-bold text-gray-500 hover:text-[#1e5c33] transition uppercase tracking-widest">OPNAME</a>
+          <button onclick="bukaModalProfil()" class="ml-2 bg-[#1a2f26] hover:bg-[#12231b] text-white text-xs font-bold px-5 py-2.5 rounded-full transition uppercase tracking-widest shrink-0">
+            AKUN SAYA
+          </button>
+        </div>
+      </nav>
+
+      <div class="fixed bottom-4 right-4 z-50 pointer-events-none">
+        <div id="statusKoneksi" class="px-4 py-2 flex items-center gap-1.5 text-[10px] font-bold text-gray-400 bg-white/80 backdrop-blur-md border border-gray-200 shadow-sm rounded-full uppercase tracking-widest pointer-events-auto">
+           <span class="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse"></span> CON...
         </div>
       </div>
+
 
       <div class="max-w-6xl mx-auto space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
@@ -606,7 +473,7 @@
                 d="M5 13l4 4L19 7"
               ></path>
             </svg>
-            Simpan Snapshot Brankas
+            Catat Keuangan Hari ini
           </button>
         </div>
       </div>
@@ -635,6 +502,10 @@
         </div>
         <div class="p-6 space-y-4">
           <input type="hidden" id="jenisTrx" />
+          <input type="hidden" id="idTrxEdit" />
+          <input type="hidden" id="tglTrxEditLama" />
+          <input type="hidden" id="sumberDanaLama" />
+          <input type="hidden" id="nominalLama" />
 
           <div>
             <label class="block text-xs font-bold text-gray-500 mb-1"
@@ -1015,11 +886,17 @@
       window.hitungSaldoSumber = function () {
         const saldoPerSumber = {};
 
-        // Ambil data dari riwayat brankas terakhir (snapshot)
-        // Kita hitung saldo berdasarkan urutan input data
-        dataRiwayatGlobal.forEach((trx) => {
-          if (!saldoPerSumber[trx.uraian]) saldoPerSumber[trx.uraian] = 0;
-          saldoPerSumber[trx.uraian] = trx.nominal;
+        // Ambil data saldo langsung dari tabel UI yang menampilkan snapshot terbaru
+        document.querySelectorAll("#list-input-tabel tr").forEach((tr) => {
+          const iptNama = tr.querySelector(".ipt-nama");
+          const iptNominal = tr.querySelector(".ipt-nominal");
+          if (iptNama && iptNominal) {
+            const nama = iptNama.value.trim();
+            const nominalVal = Number(iptNominal.value.replace(/\./g, "")) || 0;
+            if (nama) {
+              saldoPerSumber[nama] = nominalVal;
+            }
+          }
         });
 
         return saldoPerSumber;
@@ -1033,7 +910,13 @@
         const btnSimpan = document.getElementById("btnSimpanTrx");
 
         document.getElementById("jenisTrx").value = jenis;
+        document.getElementById("idTrxEdit").value = "";
+        document.getElementById("tglTrxEditLama").value = "";
+        document.getElementById("sumberDanaLama").value = "";
+        document.getElementById("nominalLama").value = "";
+        
         document.getElementById("tglTrx").valueAsDate = new Date();
+        document.getElementById("tglTrx").disabled = false;
         document.getElementById("uraianTrx").value = "";
         document.getElementById("nominalTrx").value = "";
 
@@ -1087,6 +970,133 @@
         }, 300);
       };
 
+      window.bukaModalEditArusKas = function (id) {
+        if (!window.tempArusKasData) return;
+        const trx = window.tempArusKasData.find(t => t.id === id);
+        if (!trx) return;
+        
+        document.getElementById("jenisTrx").value = trx.jenis;
+        document.getElementById("idTrxEdit").value = trx.id;
+        document.getElementById("tglTrxEditLama").value = trx.tglKey;
+        document.getElementById("sumberDanaLama").value = trx.sumberDana;
+        document.getElementById("nominalLama").value = trx.nominal;
+
+        document.getElementById("tglTrx").value = trx.tglKey;
+        document.getElementById("tglTrx").disabled = true;
+
+        document.getElementById("uraianTrx").value = trx.uraian;
+        document.getElementById("nominalTrx").value = new Intl.NumberFormat("id-ID").format(trx.nominal);
+
+        const selectSumber = document.getElementById("sumberDanaTrx");
+        const daftarSaldo = window.hitungSaldoSumber();
+
+        selectSumber.innerHTML = '<option value="" disabled selected>-- Pilih Sumber Uang --</option>';
+        if (Object.keys(daftarSaldo).length > 0) {
+          Object.keys(daftarSaldo).forEach((sumber) => {
+            const saldo = daftarSaldo[sumber];
+            const formatSaldo = new Intl.NumberFormat("id-ID").format(saldo);
+            let sel = (sumber === trx.sumberDana) ? "selected" : "";
+            selectSumber.innerHTML += `<option value="${sumber}" ${sel}>${sumber} (Saldo: Rp ${formatSaldo})</option>`;
+          });
+        } else {
+          let sel1 = ("Tunai" === trx.sumberDana) ? "selected" : "";
+          let sel2 = ("Bank" === trx.sumberDana) ? "selected" : "";
+          selectSumber.innerHTML += `<option value="Tunai" ${sel1}>Tunai</option><option value="Bank" ${sel2}>Bank</option>`;
+        }
+
+        const modal = document.getElementById("modalTransaksi");
+        const content = document.getElementById("modalTransaksiContent");
+        const header = document.getElementById("headerTrx");
+        const judul = document.getElementById("judulTrx");
+        const btnSimpan = document.getElementById("btnSimpanTrx");
+
+        if (trx.jenis === "in") {
+          header.className = "p-5 flex justify-between items-center text-white bg-[#1e5c33]";
+          judul.innerText = "Edit Pemasukan (+)";
+          btnSimpan.className = "w-full bg-[#1e5c33] hover:bg-[#154626] text-white font-extrabold py-3.5 rounded-xl transition shadow-md uppercase tracking-wider text-sm mt-4";
+        } else {
+          header.className = "p-5 flex justify-between items-center text-white bg-red-600";
+          judul.innerText = "Edit Pengeluaran (-)";
+          btnSimpan.className = "w-full bg-red-600 hover:bg-red-700 text-white font-extrabold py-3.5 rounded-xl transition shadow-md uppercase tracking-wider text-sm mt-4";
+        }
+        btnSimpan.innerText = "SIMPAN PERUBAHAN";
+
+        modal.classList.remove("hidden");
+        setTimeout(() => {
+          modal.classList.remove("opacity-0");
+          content.classList.remove("scale-95");
+          content.classList.add("scale-100");
+        }, 10);
+      };
+
+      window.hapusArusKas = async function(tglKey, id, sumberDana, nominal, jenis) {
+        if (!confirm("Yakin ingin menghapus transaksi ini?")) return;
+        
+        try {
+          const snapshot = await get(child(ref(db), `arus_kas/` + tglKey));
+          if (!snapshot.exists()) return;
+          
+          let arr = snapshot.val();
+          arr = arr.filter(t => t.id !== id);
+          
+          await set(ref(db, "arus_kas/" + tglKey), arr);
+
+          const barisTabel = document.querySelectorAll("#list-input-tabel tr");
+          let isSumberDanaFound = false;
+          barisTabel.forEach((tr) => {
+            const iptNama = tr.querySelector(".ipt-nama");
+            if (iptNama && iptNama.value.trim() === sumberDana) {
+              isSumberDanaFound = true;
+              const iptNominal = tr.querySelector(".ipt-nominal");
+              let currentValStr = iptNominal.value.replace(/\./g, "");
+              let currentVal = Number(currentValStr) || 0;
+              
+              if (jenis === "in") {
+                currentVal -= nominal;
+              } else {
+                currentVal += nominal;
+              }
+              iptNominal.value = new Intl.NumberFormat("id-ID").format(currentVal);
+              tr.setAttribute("data-timestamp", new Date().toISOString());
+              tr.setAttribute("data-original-nominal", currentVal);
+            }
+          });
+
+          if (isSumberDanaFound) {
+            const tglBrankas = document.getElementById("tanggal").value || tglKey;
+            let arrayTransaksi = [];
+            document.querySelectorAll("#list-input-tabel tr").forEach((tr) => {
+              const iptNama = tr.querySelector(".ipt-nama");
+              if (!iptNama) return;
+              const nama = iptNama.value.trim();
+              const kategori = tr.querySelector(".ipt-kategori").value.trim();
+              const inputStr = tr.querySelector(".ipt-nominal").value.trim();
+              const nominalVal = Number(inputStr.replace(/\./g, "")) || 0;
+              let ts = tr.getAttribute("data-timestamp") || new Date().toISOString();
+              
+              if (nama !== "" && inputStr !== "") {
+                arrayTransaksi.push({
+                  nama: nama,
+                  kategori: kategori,
+                  nominal: nominalVal,
+                  timestamp: ts
+                });
+              }
+            });
+            if (arrayTransaksi.length > 0) {
+              await set(ref(db, "buku_kas/" + tglBrankas), arrayTransaksi);
+              calculateAndRenderApp();
+            }
+          }
+
+          window.pushNotification("Transaksi berhasil dihapus!");
+          window.renderArusKasHistory();
+          window.addLog("del_trx", `Menghapus transaksi Rp ${nominal.toLocaleString("id-ID")}`);
+        } catch (e) {
+          window.pushNotification("Gagal hapus: " + e.message, "error");
+        }
+      };
+
       window.simpanTransaksi = async function () {
         const tgl = document.getElementById("tglTrx").value;
         const jenis = document.getElementById("jenisTrx").value;
@@ -1101,12 +1111,17 @@
           return window.pushNotification("Lengkapi semua isian form!", "error");
         }
 
+        const idEdit = document.getElementById("idTrxEdit").value;
+        const sumberDanaLama = document.getElementById("sumberDanaLama").value;
+        const nominalLamaStr = document.getElementById("nominalLama").value;
+        const nominalLama = Number(nominalLamaStr) || 0;
+
         const btn = document.getElementById("btnSimpanTrx");
         btn.innerText = "Memproses...";
         btn.disabled = true;
 
         const newTrx = {
-          id: new Date().getTime().toString(),
+          id: idEdit ? idEdit : new Date().getTime().toString(),
           jenis: jenis,
           sumberDana: sumberDana,
           uraian: uraian,
@@ -1120,7 +1135,18 @@
           if (snapshot.exists()) {
             arrHarian = snapshot.val();
           }
-          arrHarian.push(newTrx);
+          
+          if (idEdit) {
+            let foundIndex = arrHarian.findIndex(t => t.id === idEdit);
+            if (foundIndex !== -1) {
+              newTrx.timestamp = arrHarian[foundIndex].timestamp;
+              arrHarian[foundIndex] = newTrx;
+            } else {
+              arrHarian.push(newTrx);
+            }
+          } else {
+            arrHarian.push(newTrx);
+          }
 
           await set(ref(db, "arus_kas/" + tgl), arrHarian);
           if (typeof google !== "undefined") {
@@ -1132,6 +1158,27 @@
 
           // UPDATE SALDO DI TABEL BRANKAS (UI)
           const barisTabel = document.querySelectorAll("#list-input-tabel tr");
+          
+          // Revert old effect if edit
+          if (idEdit) {
+             barisTabel.forEach((tr) => {
+               const iptNama = tr.querySelector(".ipt-nama");
+               if (iptNama && iptNama.value.trim() === sumberDanaLama) {
+                 const iptNominal = tr.querySelector(".ipt-nominal");
+                 let currentValStr = iptNominal.value.replace(/\./g, "");
+                 let currentVal = Number(currentValStr) || 0;
+                 if (jenis === "in") {
+                   currentVal -= nominalLama;
+                 } else {
+                   currentVal += nominalLama;
+                 }
+                 iptNominal.value = new Intl.NumberFormat("id-ID").format(currentVal);
+                 tr.setAttribute("data-timestamp", new Date().toISOString());
+                 tr.setAttribute("data-original-nominal", currentVal);
+               }
+             });
+          }
+
           let isSumberDanaFound = false;
           barisTabel.forEach((tr) => {
             const iptNama = tr.querySelector(".ipt-nama");
@@ -1283,7 +1330,7 @@
           if (filterModeArusKas === 'hariIni') {
             const snapshot = await get(child(ref(db), `arus_kas/` + tglFilter));
             if (snapshot.exists()) {
-              dataArr = snapshot.val();
+              dataArr = snapshot.val().map(t => ({...t, tglKey: tglFilter}));
             }
           } else {
             const snapshot = await get(child(ref(db), `arus_kas`));
@@ -1305,11 +1352,13 @@
               dates.forEach(dateStr => {
                 const trxDate = new Date(dateStr);
                 if (trxDate >= limitDate) {
-                  dataArr = dataArr.concat(allData[dateStr]);
+                  dataArr = dataArr.concat(allData[dateStr].map(t => ({...t, tglKey: dateStr})));
                 }
               });
             }
           }
+          
+          window.tempArusKasData = dataArr;
 
           if (dataArr.length === 0) {
             const msg = filterModeArusKas === 'hariIni' ? "Belum ada transaksi hari ini." : "Belum ada transaksi pada periode ini.";
@@ -1341,18 +1390,28 @@
 
               const trxDateFormatted = new Date(trx.timestamp).toLocaleDateString('id-ID', {day: 'numeric', month: 'short'});
               html += `
-            <div class="flex items-center justify-between p-3 border-b border-gray-100 hover:bg-gray-50 transition rounded-lg">
-              <div class="flex items-center gap-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between p-3 border-b border-gray-100 hover:bg-gray-50 transition rounded-lg group">
+              <div class="flex items-center gap-3 w-full sm:w-auto">
                 <div class="w-10 h-10 rounded-full flex items-center justify-center ${iconBg} shrink-0">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">${iconSvg}</svg>
                 </div>
-                <div>
-                  <p class="text-sm font-bold text-gray-800">${trx.uraian} <span class="text-[10px] font-normal text-gray-400 ml-1">(${trxDateFormatted})</span></p>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-bold text-gray-800 truncate">${trx.uraian} <span class="text-[10px] font-normal text-gray-400 ml-1 whitespace-nowrap">(${trxDateFormatted})</span></p>
                   <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wide">💼 ${trx.sumberDana}</p>
                 </div>
               </div>
-              <div class="text-right shrink-0">
-                <p class="text-sm font-extrabold ${textColor}">${sign} Rp ${new Intl.NumberFormat("id-ID").format(trx.nominal)}</p>
+              <div class="flex items-center justify-between sm:justify-end mt-2 sm:mt-0 w-full sm:w-auto gap-4">
+                <div class="flex items-center gap-1.5 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                   <button onclick="window.bukaModalEditArusKas('${trx.id}')" class="p-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg transition" title="Edit">
+                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                   </button>
+                   <button onclick="window.hapusArusKas('${trx.tglKey}', '${trx.id}', '${trx.sumberDana}', ${trx.nominal}, '${trx.jenis}')" class="p-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition" title="Hapus">
+                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                   </button>
+                </div>
+                <div class="text-right shrink-0">
+                  <p class="text-sm font-extrabold ${textColor}">${sign} Rp ${new Intl.NumberFormat("id-ID").format(trx.nominal)}</p>
+                </div>
               </div>
             </div>
           `;
@@ -1733,6 +1792,16 @@
         const dbStatus = document.getElementById("statusKoneksi");
         dataRiwayatGlobal = await loadFirebaseData();
 
+        let dataArusKas = {};
+        try {
+          const snapshotArusKas = await get(child(ref(db), `arus_kas`));
+          if (snapshotArusKas.exists()) {
+            dataArusKas = snapshotArusKas.val();
+          }
+        } catch (e) {
+          console.error("Gagal load arus kas untuk chart", e);
+        }
+
         const groups = {};
         dataRiwayatGlobal.forEach((row) => {
           if (!groups[row.tanggalRaw]) {
@@ -1771,10 +1840,22 @@
             day: "2-digit",
             month: "short",
           });
+
+          let pemasukan = 0;
+          let pengeluaran = 0;
+          if (dataArusKas[key]) {
+            dataArusKas[key].forEach((trx) => {
+              if (trx.jenis === "in") pemasukan += trx.nominal;
+              else if (trx.jenis === "out") pengeluaran += trx.nominal;
+            });
+          }
+
           dataGrafik.push({
             tanggal: formatPendekDate,
             tanggalRaw: key,
             saldo: modalBersih,
+            pemasukan: pemasukan,
+            pengeluaran: pengeluaran,
           });
           if (index === sortedKeysAsc.length - 1) {
             dashboardData.aset = g.aset;
@@ -1847,7 +1928,7 @@
 
         dbStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"></span> Terhubung`;
         dbStatus.className =
-          "text-xs font-bold text-green-700 flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-full shadow-sm border border-green-200";
+          "px-4 py-2 flex items-center gap-1.5 text-[10px] font-bold text-green-700 bg-white/80 backdrop-blur-md border border-green-200 shadow-sm rounded-full uppercase tracking-widest pointer-events-auto";
       }
 
       function memuatDataRiwayatBaru() {
@@ -1864,6 +1945,9 @@
       function renderGrafik(listData) {
         const labels = listData.map((d) => d.tanggal);
         const values = listData.map((d) => d.saldo);
+        const valuesIn = listData.map((d) => d.pemasukan || 0);
+        const valuesOut = listData.map((d) => d.pengeluaran || 0);
+        
         const ctx = document
           .getElementById("canvasGrafikMurni")
           .getContext("2d");
@@ -1888,16 +1972,60 @@
                 pointBorderColor: "#3a9653",
                 pointBorderWidth: 2,
                 pointRadius: 4,
+                order: 1
               },
+              {
+                type: 'bar',
+                label: "Pemasukan",
+                data: valuesIn,
+                backgroundColor: "rgba(34, 197, 94, 0.7)",
+                borderRadius: 4,
+                order: 2,
+                yAxisID: 'y1'
+              },
+              {
+                type: 'bar',
+                label: "Pengeluaran",
+                data: valuesOut,
+                backgroundColor: "rgba(239, 68, 68, 0.7)",
+                borderRadius: 4,
+                order: 3,
+                yAxisID: 'y1'
+              }
             ],
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top',
+                align: 'end',
+                labels: {
+                  boxWidth: 10,
+                  usePointStyle: true,
+                  font: {
+                    family: "'Plus Jakarta Sans', sans-serif",
+                    size: 11,
+                    weight: 'bold'
+                  }
+                }
+              }
+            },
             scales: {
               y: {
+                type: 'linear',
+                display: true,
+                position: 'left',
                 grid: { color: "#f1f5f9", drawBorder: false },
+                ticks: { callback: (v) => "Rp " + v.toLocaleString("id-ID") },
+              },
+              y1: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                grid: { drawOnChartArea: false },
                 ticks: { callback: (v) => "Rp " + v.toLocaleString("id-ID") },
               },
               x: { grid: { display: false, drawBorder: false } },
@@ -1906,91 +2034,6 @@
           },
         });
       }
-
-      // LOGIC AUTENTIKASI
-      let authMode = "login";
-      window.switchTab = function (mode) {
-        authMode = mode;
-        const tabLogin = document.getElementById("tabLogin");
-        const tabRegister = document.getElementById("tabRegister");
-        const btnAuth = document.getElementById("btnAuth");
-        const lupaPasswordContainer = document.getElementById("lupaPasswordContainer");
-
-        if (mode === "login") {
-          tabLogin.className =
-            "flex-1 py-2 text-sm font-bold text-white bg-[#1e5c33] rounded-lg shadow-sm transition";
-          tabRegister.className =
-            "flex-1 py-2 text-sm font-bold text-white/50 hover:text-white transition";
-          btnAuth.innerText = "MASUK";
-          lupaPasswordContainer.style.display = "block";
-        } else {
-          tabRegister.className =
-            "flex-1 py-2 text-sm font-bold text-white bg-[#1e5c33] rounded-lg shadow-sm transition";
-          tabLogin.className =
-            "flex-1 py-2 text-sm font-bold text-white/50 hover:text-white transition";
-          btnAuth.innerText = "DAFTAR SEKARANG";
-          lupaPasswordContainer.style.display = "none";
-        }
-      };
-
-      window.handleResetPassword = async function() {
-        const email = document.getElementById("authEmail").value;
-        if (!email) {
-          return window.pushNotification("Masukkan email Anda terlebih dahulu untuk mereset password", "error");
-        }
-        
-        try {
-          await sendPasswordResetEmail(auth, email);
-          window.pushNotification("Email reset password telah dikirim. Silakan cek inbox/spam Anda.", "sukses");
-        } catch (error) {
-          window.pushNotification("Gagal mengirim email reset: " + error.message, "error");
-        }
-      };
-
-      window.handleAuthAction = async function () {
-        const email = document.getElementById("authEmail").value;
-        const password = document.getElementById("authPassword").value;
-
-        if (!email || !password)
-          return window.pushNotification(
-            "Email dan password harus diisi!",
-            "error",
-          );
-
-        const btnAuth = document.getElementById("btnAuth");
-        const originalText = btnAuth.innerText;
-        btnAuth.innerText = "MEMPROSES...";
-        btnAuth.disabled = true;
-
-        try {
-          if (authMode === "login") {
-            await signInWithEmailAndPassword(auth, email, password);
-            window.pushNotification("Berhasil masuk!");
-          } else {
-            await createUserWithEmailAndPassword(auth, email, password);
-            window.pushNotification("Pendaftaran berhasil!");
-          }
-        } catch (error) {
-          window.pushNotification(error.message, "error");
-        } finally {
-          btnAuth.innerText = originalText;
-          btnAuth.disabled = false;
-        }
-      };
-
-      const googleProvider = new GoogleAuthProvider();
-
-      window.handleGoogleLogin = async function () {
-        try {
-          await signInWithPopup(auth, googleProvider);
-          // Login berhasil, onAuthStateChanged akan menanganinya
-        } catch (error) {
-          window.pushNotification(
-            "Gagal masuk dengan Google: " + error.message,
-            "error",
-          );
-        }
-      };
 
       window.bukaModalProfil = function() {
         const modal = document.getElementById("modalProfil");
@@ -2117,20 +2160,16 @@
       }
 
       document.addEventListener("DOMContentLoaded", function () {
-        const loginScreen = document.getElementById("loginScreen");
         const mainApp = document.getElementById("mainApp");
 
         onAuthStateChanged(auth, (user) => {
           if (user) {
             currentUser = user;
-            document.getElementById("userEmailDisplay").innerText = user.email;
+            const emailDisplay = document.getElementById("userEmailDisplay");
+            if (emailDisplay) emailDisplay.innerText = user.email;
 
-            loginScreen.classList.add("opacity-0");
-            setTimeout(() => {
-              loginScreen.classList.add("hidden");
-              mainApp.classList.remove("hidden");
-              setTimeout(() => mainApp.classList.remove("opacity-0"), 50);
-            }, 500);
+            mainApp.classList.remove("hidden");
+            setTimeout(() => mainApp.classList.remove("opacity-0"), 50);
 
             const dInput = document.getElementById("tanggal");
             if (dInput) dInput.valueAsDate = new Date();
@@ -2152,14 +2191,19 @@
 
             startRealtimeLogsListener();
             window.addLog("login", "Telah masuk ke aplikasi");
+
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('openProfile') === 'true') {
+              setTimeout(() => {
+                if (typeof window.bukaModalProfil === 'function') {
+                  window.bukaModalProfil();
+                }
+                window.history.replaceState({}, document.title, window.location.pathname);
+              }, 500);
+            }
           } else {
             currentUser = null;
-            mainApp.classList.add("opacity-0");
-            setTimeout(() => {
-              mainApp.classList.add("hidden");
-              loginScreen.classList.remove("hidden");
-              setTimeout(() => loginScreen.classList.remove("opacity-0"), 50);
-            }, 500);
+            window.location.href = "login.html";
           }
         });
       });
