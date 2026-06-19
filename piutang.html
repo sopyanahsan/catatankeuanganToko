@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#1e5c33" />
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" />
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Catatan Bon Petani - Catatan Keuangan</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap");
+
+    body {
+      background-color: #f2f7f4;
+      font-family: "Plus Jakarta Sans", sans-serif;
+      color: #1a2f26;
+    }
+    .modal-bg {
+      background-color: rgba(14, 31, 23, 0.6);
+      backdrop-filter: blur(4px);
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 8px 32px rgba(28, 64, 46, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+    @keyframes pulse-badge {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    .pulse-badge {
+      animation: pulse-badge 2s infinite;
+    }
+  </style>
+</head>
+<body class="p-3 md:p-6 pb-10">
+  <div id="toastContainer" class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-3 pointer-events-none w-full max-w-sm px-4"></div>
+
+  <nav class="max-w-6xl mx-auto pt-6 pb-8 px-2 flex justify-between items-center relative z-50">
+    <div class="flex items-center gap-2">
+      <svg class="w-8 h-8 text-[#1e5c33]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z" />
+      </svg>
+      <span class="font-bold text-xl text-[#1a2f26] tracking-tight">CatatanKeuangan</span>
+    </div>
+
+    <div class="flex items-center bg-[#f0f2ed]/80 backdrop-blur-md rounded-full px-2 py-1.5 border border-white/40 shadow-sm overflow-x-auto whitespace-nowrap">
+      <a href="index.html" class="nav-link px-5 py-2 text-xs font-bold text-gray-500 hover:text-[#1e5c33] transition uppercase tracking-widest">DASHBOARD</a>
+      <a href="produk.html" class="nav-link px-5 py-2 text-xs font-bold text-gray-500 hover:text-[#1e5c33] transition uppercase tracking-widest">PRODUK</a>
+      <a href="supplier.html" class="nav-link px-5 py-2 text-xs font-bold text-gray-500 hover:text-[#1e5c33] transition uppercase tracking-widest">NOTA SUPPLIER</a>
+      <a href="piutang.html" class="nav-link px-5 py-2 text-xs font-bold text-[#1e5c33] bg-white rounded-full transition uppercase tracking-widest">CATATAN BON</a>
+      <a href="opname.html" class="nav-link px-5 py-2 text-xs font-bold text-gray-500 hover:text-[#1e5c33] transition uppercase tracking-widest">OPNAME</a>
+      <button onclick="bukaModalProfil()" class="ml-2 bg-[#1a2f26] hover:bg-[#12231b] text-white text-xs font-bold px-5 py-2.5 rounded-full transition uppercase tracking-widest shrink-0">
+        AKUN SAYA
+      </button>
+    </div>
+  </nav>
+
+  <div class="max-w-6xl mx-auto space-y-6">
+    <!-- METRIC CARD: TOTAL BON BELUM LUNAS -->
+    <div class="bg-gradient-to-br from-[#85d89d] via-[#5dbb76] to-[#3a9653] p-6 rounded-[2rem] text-white shadow-lg relative overflow-hidden flex flex-col justify-between min-h-[180px]">
+      <div class="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl"></div>
+      <div class="relative z-10">
+        <p class="text-sm font-semibold text-green-50 mb-1 opacity-90">Total Uang Bon Petani</p>
+        <h3 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-4" id="totalBonBelumLunas">Rp 0</h3>
+        <div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/30 shadow-sm">
+          <div class="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-bold text-green-700">⚠️</div>
+          <div>
+            <p class="text-[10px] uppercase tracking-wider text-green-50 opacity-90 leading-none">Di Luar</p>
+            <p class="text-sm font-bold leading-tight" id="countBelumLunas">0 Petani</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLE & SEARCH (FULL WIDTH) -->
+    <div class="glass-card p-5 md:p-6 rounded-[2rem] border-t-4 border-t-[#1e5c33] flex flex-col">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <h3 class="text-lg font-bold text-[#1a2f26]">📋 Daftar Tagihan Petani</h3>
+        <button onclick="bukaModalFormBon()" class="bg-[#1e5c33] hover:bg-[#154626] text-white font-extrabold py-3 px-6 rounded-xl transition shadow-md uppercase tracking-wider text-sm flex items-center justify-center gap-2 w-full sm:w-auto">
+          <span>➕ Catat Bon Baru</span>
+        </button>
+      </div>
+      
+      <div class="mb-4">
+        <input type="text" id="inputPencarian" placeholder="🔍 Cari nama petani..." class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]" />
+      </div>
+
+        <div class="overflow-x-auto flex-1">
+          <table class="w-full text-left text-sm" style="min-width: 500px">
+            <thead class="bg-gray-50 text-gray-400 text-[10px] uppercase tracking-wider sticky top-0 z-20">
+              <tr>
+                <th class="p-3 pl-4">Tanggal / Status</th>
+                <th class="p-3">Nama Petani</th>
+                <th class="p-3 hidden md:table-cell">Keterangan</th>
+                <th class="p-3 text-right">Sisa Bon</th>
+                <th class="p-3 text-center w-20">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tabelPiutang" class="divide-y divide-gray-100">
+              <tr><td colspan="5" class="text-center py-6 text-sm font-bold text-gray-400">Memuat data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+  <!-- MODAL FORM CATATAN BON BARU -->
+  <div id="modalFormBon" class="fixed inset-0 modal-bg z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-white w-full max-w-md max-h-[85vh] rounded-[2rem] shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col" id="modalFormBonContent">
+      <div class="p-5 flex justify-between items-center text-white bg-[#1a2f26] shrink-0">
+        <h3 class="font-extrabold text-lg">➕ Catat Bon Baru</h3>
+        <button onclick="tutupModalFormBon()" class="text-white/70 hover:text-white text-2xl font-bold transition">&times;</button>
+      </div>
+      <div class="p-6 overflow-y-auto">
+        <form id="formBonBaru" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-gray-500 mb-1">Nama Petani / Customer</label>
+            <input type="text" id="inputNamaPetani" placeholder="Contoh: Budi Santoso" required class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-500 mb-1">Tanggal Transaksi</label>
+            <input type="date" id="inputTanggalTransaksi" required class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]" />
+          </div>
+          <!-- KERANJANG BARANG -->
+          <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+            <label class="block text-xs font-bold text-gray-500 mb-2 uppercase">Tambah Barang</label>
+            <div class="flex gap-2 mb-2">
+                <input type="text" id="inputProduk" list="produkSuggestions" placeholder="Cari barang..." class="flex-1 bg-white border border-gray-200 p-2 rounded-lg text-sm font-bold text-gray-700">
+                <datalist id="produkSuggestions"></datalist>
+                <input type="number" id="inputQty" placeholder="Qty" class="w-20 bg-white border border-gray-200 p-2 rounded-lg text-sm font-bold text-gray-700">
+                <button type="button" onclick="tambahKeKeranjang()" class="bg-[#1e5c33] text-white px-4 rounded-lg font-bold text-sm">＋</button>
+            </div>
+            <div id="keranjangList" class="text-xs text-gray-600 space-y-1"></div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-500 mb-1">Total Nilai Belanja (Rp)</label>
+            <input type="number" id="inputTotalNilai" placeholder="0" min="0" required class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]" readonly />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-500 mb-1">DP / Bayar Sebagian (Rp)</label>
+            <input type="number" id="inputDP" placeholder="0" min="0" value="0" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-500 mb-1">Keterangan Barang</label>
+            <textarea id="inputKeterangan" placeholder="Contoh: Ambil pupuk urea 2 sak dan obat wereng" rows="3" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33] resize-none"></textarea>
+          </div>
+          <button type="submit" class="w-full bg-[#1e5c33] hover:bg-[#154626] text-white font-extrabold py-3.5 rounded-xl transition shadow-md uppercase tracking-wider text-sm flex items-center justify-center gap-2">
+            <span>➕ Simpan Catatan Bon Baru</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL BAYAR/CICIL -->
+  <div id="modalBayarCicil" class="fixed inset-0 modal-bg z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-white w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300" id="modalBayarCicilContent">
+      <div class="p-5 flex justify-between items-center text-white bg-[#1a2f26]">
+        <h3 class="font-extrabold text-lg">💸 Bayar / Cicil</h3>
+        <button onclick="tutupModalBayarCicil()" class="text-white/70 hover:text-white text-2xl font-bold transition">&times;</button>
+      </div>
+      <div class="p-6 space-y-4">
+        <input type="hidden" id="modalPiutangId" />
+        <div>
+          <p class="text-xs text-gray-500 font-bold mb-1">Sisa Hutang</p>
+          <p id="modalSisaHutang" class="font-extrabold text-[#1a2f26] text-2xl">Rp 0</p>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-500 mb-1">Jumlah Uang yang Dibayar (Rp)</label>
+          <input type="number" id="modalJumlahBayar" placeholder="0" min="0" required class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]" />
+        </div>
+        <button id="btnKonfirmasiBayar" onclick="simpanBayarCicil()" class="w-full bg-[#1e5c33] hover:bg-[#154626] text-white font-extrabold py-3 rounded-xl transition shadow-sm text-sm">
+          ✓ Konfirmasi Pembayaran
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PROFIL -->
+  <div id="modalProfil" class="fixed inset-0 modal-bg z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-white w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300" id="modalProfilContent">
+      <div class="p-5 flex justify-between items-center text-white bg-[#1a2f26]">
+        <h3 class="font-extrabold text-lg">Profil Akun</h3>
+        <button onclick="tutupModalProfil()" class="text-white/70 hover:text-white text-2xl font-bold transition">&times;</button>
+      </div>
+      <div class="p-6 space-y-5 text-center">
+        <div class="w-20 h-20 bg-green-100 text-green-700 rounded-full flex items-center justify-center font-bold text-4xl mx-auto mb-2 shadow-inner">👤</div>
+        <div>
+          <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Email Saat Ini</p>
+          <p id="profilEmailDisplay" class="font-extrabold text-[#1a2f26] text-lg">user@email.com</p>
+          <p id="profilProviderDisplay" class="text-xs text-gray-500 mt-1 font-bold bg-gray-100 inline-block px-2 py-0.5 rounded-md"></p>
+        </div>
+        <div class="border-t border-gray-100 pt-5 text-left space-y-3">
+           <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 mb-3" id="gantiPasswordContainer">
+             <p class="text-xs text-gray-500 font-bold mb-2">Ganti Password Langsung</p>
+             <input type="password" id="profilNewPassword" placeholder="Masukkan password baru" class="w-full bg-white border border-gray-200 p-2.5 rounded-xl outline-none text-sm font-bold text-gray-700 mb-2 focus:border-green-400" />
+             <button id="btnSimpanPassword" onclick="handleUpdatePasswordUI()" class="w-full bg-[#1e5c33] hover:bg-[#154626] text-white font-bold py-2.5 rounded-xl transition shadow-sm text-sm">Simpan Password Baru</button>
+           </div>
+           <p class="text-xs text-gray-500 font-bold mt-4">Menu Akun</p>
+           <button onclick="handleLogout()" class="w-full flex items-center justify-between p-3 rounded-xl bg-red-50 hover:bg-red-100 transition border border-red-100 group">
+              <span class="text-sm font-bold text-red-600 group-hover:text-red-700">Keluar (Logout)</span>
+              <svg class="w-4 h-4 text-red-400 group-hover:text-red-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+           </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+    import { getDatabase, ref, set, get, child, push, update } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBKaa7F02csop4ocmmTwYksEE-oTKVkV0Q",
+      authDomain: "buku-besar-keuangan.firebaseapp.com",
+      projectId: "buku-besar-keuangan",
+      storageBucket: "buku-besar-keuangan.firebasestorage.app",
+      messagingSenderId: "153517228065",
+      appId: "1:153517228065:web:590991b36a11e28bc1e360",
+      measurementId: "G-QDVYYPH7DH",
+      databaseURL: "https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+
+    const URL_HARGA = 'https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/harga_produk.json';
+
+    let currentUser = null;
+    let allPiutangData = [];
+    let keranjang = [];
+    let existingProducts = {}; // To store product prices
+
+    window.pushNotification = function (pesan, jenis = "sukses") {
+      const container = document.getElementById("toastContainer");
+      const toast = document.createElement("div");
+      let bgClass = "bg-[#1a2f26] border border-green-800 text-white";
+      let icon = `<svg class="w-5 h-5 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+
+      if (jenis === "error" || jenis === "peringatan") {
+        bgClass = "bg-red-900 border border-red-800 text-white";
+        icon = `<svg class="w-5 h-5 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
+      }
+      toast.className = `${bgClass} p-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 opacity-0 -translate-y-4 pointer-events-auto font-bold text-xs tracking-wide`;
+      toast.innerHTML = `${icon} <span>${pesan}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.remove("opacity-0", "-translate-y-4");
+        toast.classList.add("opacity-100", "translate-y-0");
+      }, 10);
+      setTimeout(() => {
+        toast.classList.remove("opacity-100", "translate-y-0");
+        toast.classList.add("opacity-0", "-translate-y-2");
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    };
+
+    const formatRupiah = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
+
+    const formatDate = (dateStr) => {
+      if (!dateStr) return '-';
+      const d = new Date(dateStr);
+      return new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }).format(d);
+    };
+
+    const getDaysDiff = (dateStr) => {
+      if (!dateStr) return 0;
+      const d = new Date(dateStr);
+      const today = new Date();
+      return Math.floor((today - d) / (1000 * 60 * 60 * 24));
+    };
+
+    window.bukaModalProfil = function() {
+      const modal = document.getElementById("modalProfil");
+      const content = document.getElementById("modalProfilContent");
+      if (currentUser) {
+        document.getElementById("profilEmailDisplay").innerText = currentUser.email;
+        const isGoogle = currentUser.providerData.some(p => p.providerId === 'google.com');
+        document.getElementById("profilProviderDisplay").innerText = isGoogle ? "Login via Google" : "Login via Email/Password";
+        if (isGoogle) {
+          document.getElementById("gantiPasswordContainer").style.display = "none";
+        } else {
+          document.getElementById("gantiPasswordContainer").style.display = "block";
+          document.getElementById("profilNewPassword").value = "";
+        }
+      }
+      modal.classList.remove("hidden");
+      setTimeout(() => {
+        modal.classList.remove("opacity-0");
+        content.classList.remove("scale-95");
+      }, 10);
+    };
+
+    window.tutupModalProfil = function() {
+      const modal = document.getElementById("modalProfil");
+      const content = document.getElementById("modalProfilContent");
+      modal.classList.add("opacity-0");
+      content.classList.add("scale-95");
+      setTimeout(() => modal.classList.add("hidden"), 300);
+    };
+
+    window.handleUpdatePasswordUI = async function() {
+      if (!currentUser) return;
+      const newPassword = document.getElementById("profilNewPassword").value;
+      if (!newPassword || newPassword.length < 6) {
+        return window.pushNotification("Password baru minimal 6 karakter!", "error");
+      }
+      const btn = document.getElementById("btnSimpanPassword");
+      const originalText = btn.innerText;
+      btn.innerText = "Menyimpan...";
+      btn.disabled = true;
+      try {
+        await updatePassword(currentUser, newPassword);
+        window.pushNotification("Password berhasil diubah!", "sukses");
+        document.getElementById("profilNewPassword").value = "";
+      } catch (error) {
+        if (error.code === 'auth/requires-recent-login') {
+          window.pushNotification("Keamanan: Silakan logout dan login kembali terlebih dahulu.", "error");
+        } else {
+          window.pushNotification("Gagal mengubah password: " + error.message, "error");
+        }
+      } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+      }
+    };
+
+    window.handleLogout = async function () {
+      try {
+        await signOut(auth);
+        window.pushNotification("Berhasil keluar.");
+        window.tutupModalProfil();
+        setTimeout(() => {
+            window.location.href = "login.html";
+        }, 1000);
+      } catch (error) {
+        window.pushNotification("Gagal keluar: " + error.message, "error");
+      }
+    };
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "login.html";
+      } else {
+        currentUser = user;
+        loadPiutangData();
+        loadProductData(); // Load product data when user is authenticated
+      }
+    });
+
+    // ==========================================
+    // PRODUCT SELECTION AND CART LOGIC
+    // ==========================================
+    async function loadProductData() {
+      try {
+        const snapshot = await get(child(ref(db), 'harga_produk'));
+        const data = snapshot.val() || {};
+        const datalist = document.getElementById('produkSuggestions');
+        datalist.innerHTML = '';
+        existingProducts = {}; // Clear previous data
+
+        Object.entries(data).forEach(([id, item]) => {
+          if (!item) return;
+          const namaProduk = item.nama || item.produk;
+          if (namaProduk && String(namaProduk).trim() !== '' && namaProduk !== '-') {
+            const cleanName = namaProduk.trim();
+            if (!existingProducts[cleanName.toLowerCase()]) { // Only add once per product name
+              const option = document.createElement('option');
+              option.value = cleanName;
+              datalist.appendChild(option);
+              existingProducts[cleanName.toLowerCase()] = {
+                id: id,
+                harga_jual: parseFloat(item.harga_jual) || 0,
+                ...item
+              };
+            }
+          }
+        });
+      } catch (error) {
+        console.error("Gagal memuat data produk:", error);
+        window.pushNotification("Gagal memuat daftar produk.", "error");
+      }
+    }
+
+    window.tambahKeKeranjang = function() {
+      const inputProduk = document.getElementById('inputProduk');
+      const inputQty = document.getElementById('inputQty');
+      
+      const produkNama = inputProduk.value.trim();
+      const qty = parseFloat(inputQty.value);
+
+      if (!produkNama) {
+        window.pushNotification("Nama produk tidak boleh kosong!", "error");
+        inputProduk.focus();
+        return;
+      }
+      if (isNaN(qty) || qty <= 0) {
+        window.pushNotification("Jumlah/unit tidak valid!", "error");
+        inputQty.focus();
+        return;
+      }
+
+      const productInfo = existingProducts[produkNama.toLowerCase()];
+      if (!productInfo) {
+        window.pushNotification("Produk tidak ditemukan dalam daftar!", "error");
+        inputProduk.focus();
+        return;
+      }
+
+      keranjang.push({
+        nama: produkNama,
+        qty: qty,
+        harga_satuan: productInfo.harga_jual
+      });
+
+      inputProduk.value = '';
+      inputQty.value = '';
+      inputProduk.focus();
+
+      renderKeranjang();
+      updateTotalNilai();
+    };
+
+    function renderKeranjang() {
+      const keranjangListDiv = document.getElementById('keranjangList');
+      keranjangListDiv.innerHTML = '';
+
+      if (keranjang.length === 0) {
+        keranjangListDiv.innerHTML = '<p class="text-gray-400 italic">Keranjang kosong.</p>';
+        return;
+      }
+
+      keranjang.forEach((item, index) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'flex items-center justify-between bg-white p-2 rounded-lg shadow-sm';
+        itemDiv.innerHTML = `
+          <div>
+            <span class="font-bold text-gray-800">${item.nama}</span>
+            <span class="text-gray-500"> (${item.qty} x ${formatRupiah(item.harga_satuan)}) = <b>${formatRupiah(item.qty * item.harga_satuan)}</b></span>
+          </div>
+          <button type="button" onclick="hapusDariKeranjang(${index})" class="text-red-400 hover:text-red-600 ml-2">❌</button>
+        `;
+        keranjangListDiv.appendChild(itemDiv);
+      });
+    }
+
+    window.hapusDariKeranjang = function(index) {
+      keranjang.splice(index, 1);
+      renderKeranjang();
+      updateTotalNilai();
+    };
+
+    function updateTotalNilai() {
+      const total = keranjang.reduce((sum, item) => sum + (item.qty * item.harga_satuan), 0);
+      document.getElementById('inputTotalNilai').value = total;
+    }
+
+    // Initialize keranjang display
+    renderKeranjang();
+    updateTotalNilai();
+
+    async function loadPiutangData() {
+      try {
+        const snapshot = await get(child(ref(db), 'piutang_customer'));
+        const data = snapshot.val() || {};
+        allPiutangData = Object.entries(data).map(([id, val]) => ({ id, ...val }));
+        renderPiutang();
+        updateMetrics();
+      } catch (error) {
+        console.error("Gagal load piutang:", error);
+        window.pushNotification("Gagal memuat data dari Firebase.", "error");
+      }
+    }
+
+    function renderPiutang(filtered = null) {
+      const tbody = document.getElementById('tabelPiutang');
+      const data = filtered || allPiutangData.filter(p => p.status === "Belum Lunas");
+      
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-sm font-bold text-gray-400">Tidak ada data piutang yang belum lunas.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = '';
+      data.forEach(item => {
+        const daysDiff = getDaysDiff(item.tanggal);
+        const isOverdue = daysDiff > 90;
+        
+        const tr = document.createElement('tr');
+        tr.className = "bg-white transition hover:bg-gray-50";
+        
+        const statusBadge = item.status === "Lunas" 
+          ? '<span class="bg-green-100 text-green-700 px-2 py-1 rounded-md text-[10px] font-bold uppercase">✓ Lunas</span>'
+          : '<span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-md text-[10px] font-bold uppercase">⏳ Belum Lunas</span>';
+
+        const overdueBadge = isOverdue 
+          ? '<span class="bg-red-100 text-red-700 px-2 py-1 rounded-md text-[10px] font-bold uppercase pulse-badge">⚠️ Jatuh Tempo (>3 Bln)</span>'
+          : '';
+
+        tr.innerHTML = `
+          <td class="p-3 pl-4">
+            <div class="text-sm font-bold text-[#1a2f26]">${formatDate(item.tanggal)}</div>
+            <div class="text-[10px] text-gray-500 mt-1">${statusBadge}</div>
+          </td>
+          <td class="p-3 text-sm font-bold text-[#1a2f26]">${item.nama_petani || '-'}</td>
+          <td class="p-3 hidden md:table-cell text-sm text-gray-600">${item.keterangan ? item.keterangan.substring(0, 40) + (item.keterangan.length > 40 ? '...' : '') : '-'}</td>
+          <td class="p-3 text-right">
+            <div class="text-sm font-extrabold text-[#1a2f26]">${formatRupiah(item.sisa_hutang || 0)}</div>
+            ${overdueBadge ? '<div class="mt-1">' + overdueBadge + '</div>' : ''}
+          </td>
+          <td class="p-3 text-center">
+            <button onclick="bukaModalBayarCicil('${item.id}', ${item.sisa_hutang || 0})" class="bg-[#1e5c33] hover:bg-[#154626] text-white font-bold px-3 py-2 rounded-lg text-xs transition flex items-center justify-center gap-1 mx-auto">
+              💸 Bayar
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function updateMetrics() {
+      const belumLunasData = allPiutangData.filter(p => p.status === "Belum Lunas");
+      const totalBon = belumLunasData.reduce((sum, p) => sum + (p.sisa_hutang || 0), 0);
+      
+      document.getElementById('totalBonBelumLunas').innerText = formatRupiah(totalBon);
+      document.getElementById('countBelumLunas').innerText = belumLunasData.length + ' Petani';
+    }
+
+    document.getElementById('inputTanggalTransaksi').valueAsDate = new Date();
+
+    document.getElementById('inputPencarian').addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      const filtered = allPiutangData.filter(p => 
+        p.status === "Belum Lunas" && p.nama_petani.toLowerCase().includes(query)
+      );
+      renderPiutang(filtered);
+    });
+
+    document.getElementById('formBonBaru').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const namaPetani = document.getElementById('inputNamaPetani').value.trim();
+      const tanggal = document.getElementById('inputTanggalTransaksi').value;
+      // Use the total from the cart, not the input field directly if it's not manually set
+      const totalNilai = parseFloat(document.getElementById('inputTotalNilai').value) || 0; 
+      const dp = parseFloat(document.getElementById('inputDP').value) || 0;
+      const keterangan = document.getElementById('inputKeterangan').value.trim();
+
+      if (keranjang.length === 0) {
+        window.pushNotification("Keranjang barang masih kosong!", "error");
+        return;
+      }
+
+      if (!namaPetani || !tanggal || totalNilai <= 0) {
+        window.pushNotification("Harap isi semua field yang wajib!", "error");
+        return;
+      }
+
+      const sisaHutang = totalNilai - dp;
+      const status = sisaHutang <= 0 ? "Lunas" : "Belum Lunas";
+
+      const bonData = {
+        nama_petani: namaPetani,
+        tanggal: new Date(tanggal).toISOString(),
+        total_nilai: totalNilai,
+        dp: dp,
+        sisa_hutang: Math.max(0, sisaHutang),
+        status: status,
+        keterangan: keterangan
+      };
+
+      try {
+        const newRef = push(ref(db, 'piutang_customer'));
+        await set(newRef, bonData);
+
+        if (dp > 0) {
+          await updateBrankas(dp);
+        }
+
+        window.pushNotification("Bon petani berhasil disimpan!", "sukses");
+        document.getElementById('formBonBaru').reset();
+        document.getElementById('inputTanggalTransaksi').valueAsDate = new Date();
+        await loadPiutangData();
+      } catch (error) {
+        console.error("Gagal simpan bon:", error);
+        window.pushNotification("Gagal menyimpan bon: " + error.message, "error");
+      }
+    });
+
+    async function updateBrankas(nominal) {
+      try {
+        const snapshot = await get(child(ref(db), 'snapshot_brankas'));
+        const brankas = snapshot.val() || {};
+        const terbaru = Object.values(brankas).sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal))[0] || { kas_masuk: 0, kas_keluar: 0, total_saldo: 0 };
+        
+        const newBrankas = {
+          tanggal: new Date().toISOString(),
+          kas_masuk: (terbaru.kas_masuk || 0) + nominal,
+          kas_keluar: terbaru.kas_keluar || 0,
+          total_saldo: (terbaru.total_saldo || 0) + nominal,
+          keterangan: "Pembayaran Bon Petani"
+        };
+
+        await push(ref(db, 'snapshot_brankas'), newBrankas);
+      } catch (error) {
+        console.error("Gagal update brankas:", error);
+      }
+    }
+
+    window.bukaModalFormBon = function() {
+      document.getElementById('formBonBaru').reset();
+      document.getElementById('inputTanggalTransaksi').valueAsDate = new Date();
+      const modal = document.getElementById("modalFormBon");
+      const content = document.getElementById("modalFormBonContent");
+      modal.classList.remove("hidden");
+      setTimeout(() => {
+        modal.classList.remove("opacity-0");
+        content.classList.remove("scale-95");
+      }, 10);
+    };
+
+    window.tutupModalFormBon = function() {
+      const modal = document.getElementById("modalFormBon");
+      const content = document.getElementById("modalFormBonContent");
+      modal.classList.add("opacity-0");
+      content.classList.add("scale-95");
+      setTimeout(() => modal.classList.add("hidden"), 300);
+    };
+
+    window.bukaModalBayarCicil = function(id, sisa) {
+      document.getElementById('modalPiutangId').value = id;
+      document.getElementById('modalSisaHutang').innerText = formatRupiah(sisa);
+      document.getElementById('modalJumlahBayar').value = '';
+      const modal = document.getElementById('modalBayarCicil');
+      const content = document.getElementById('modalBayarCicilContent');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        content.classList.remove('scale-95');
+      }, 10);
+    };
+
+    window.tutupModalBayarCicil = function() {
+      const modal = document.getElementById('modalBayarCicil');
+      const content = document.getElementById('modalBayarCicilContent');
+      modal.classList.add('opacity-0');
+      content.classList.add('scale-95');
+      setTimeout(() => modal.classList.add('hidden'), 300);
+    };
+
+    window.simpanBayarCicil = async function() {
+      const id = document.getElementById('modalPiutangId').value;
+      const jumlahBayar = parseFloat(document.getElementById('modalJumlahBayar').value) || 0;
+
+      if (jumlahBayar <= 0) {
+        window.pushNotification("Masukkan jumlah pembayaran yang valid!", "error");
+        return;
+      }
+
+      const item = allPiutangData.find(p => p.id === id);
+      if (!item) {
+        window.pushNotification("Data tidak ditemukan!", "error");
+        return;
+      }
+
+      const sisaBaru = Math.max(0, (item.sisa_hutang || 0) - jumlahBayar);
+      const statusBaru = sisaBaru <= 0 ? "Lunas" : "Belum Lunas";
+
+      const btn = document.getElementById('btnKonfirmasiBayar');
+      const oldText = btn.innerText;
+      btn.innerText = 'Menyimpan...';
+      btn.disabled = true;
+
+      try {
+        await update(ref(db, `piutang_customer/${id}`), {
+          sisa_hutang: sisaBaru,
+          status: statusBaru
+        });
+
+        await updateBrankas(jumlahBayar);
+
+        window.pushNotification("Pembayaran berhasil dicatat!", "sukses");
+        window.tutupModalBayarCicil();
+        await loadPiutangData();
+      } catch (error) {
+        console.error("Gagal simpan pembayaran:", error);
+        window.pushNotification("Gagal menyimpan pembayaran: " + error.message, "error");
+      } finally {
+        btn.innerText = oldText;
+        btn.disabled = false;
+      }
+    };
+  </script>
+</body>
+</html>
