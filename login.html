@@ -7,6 +7,7 @@
       rel="apple-touch-icon"
       href="https://cdn-icons-png.flaticon.com/512/3062/3062634.png"
     />
+    <link rel="icon" type="image/png" href="favicon.png" />
     <meta charset="UTF-8" />
     <meta
       name="viewport"
@@ -22,6 +23,16 @@
         font-family: "Plus Jakarta Sans", sans-serif;
         color: #1a2f26;
       }
+      /* Custom styles for PIN input indicators */
+      .pin-indicator {
+        transition: background-color 0.3s ease;
+      }
+      .pin-indicator-filled {
+        background-color: #ffffff; /* White when filled */
+      }
+      .pin-indicator-empty {
+        background-color: #064e3b; /* Dark color for empty */
+      }
     </style>
   </head>
   <body class="p-3 md:p-6 pb-10">
@@ -30,10 +41,43 @@
       class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-3 pointer-events-none w-full max-w-sm px-4"
     ></div>
 
+    <!-- PIN SCREEN CONTAINER -->
+    <div
+      id="pinScreen"
+      class="fixed inset-0 z-[70] bg-gradient-to-br from-[#1a2f26] via-[#101f18] to-black flex items-center justify-center p-4 transition-opacity duration-500"
+    >
+      <div class="text-center">
+        <h1 class="text-2xl font-extrabold text-white tracking-tight mb-6">
+          Masukkan PIN Gerbang
+        </h1>
+        <div id="pinDisplay" class="flex justify-center space-x-4 mb-8">
+          <!-- Visual indicators for PIN digits -->
+          <div class="pin-indicator pin-indicator-empty w-4 h-4 rounded-full"></div>
+          <div class="pin-indicator pin-indicator-empty w-4 h-4 rounded-full"></div>
+          <div class="pin-indicator pin-indicator-empty w-4 h-4 rounded-full"></div>
+          <div class="pin-indicator pin-indicator-empty w-4 h-4 rounded-full"></div>
+        </div>
+        <div id="pinKeypad" class="grid grid-cols-3 gap-4 w-64 mx-auto">
+          <button class="keypad-btn p-4 rounded-lg bg-white/10 text-white font-bold text-lg focus:outline-none focus:ring-2 focus:ring-green-500">1</button>
+          <button class="keypad-btn p-4 rounded-lg bg-white/10 text-white font-bold text-lg focus:outline-none focus:ring-2 focus:ring-green-500">2</button>
+          <button class="keypad-btn p-4 rounded-lg bg-white/10 text-white font-bold text-lg focus:outline-none focus:ring-2 focus:ring-green-500">3</button>
+          <button class="keypad-btn p-4 rounded-lg bg-white/10 text-white font-bold text-lg focus:outline-none focus:ring-2 focus:ring-green-500">4</button>
+          <button class="keypad-btn p-4 rounded-lg bg-white/10 text-white font-bold text-lg focus:outline-none focus:ring-2 focus:ring-green-500">5</button>
+          <button class="keypad-btn p-4 rounded-lg bg-white/10 text-white font-bold text-lg focus:outline-none focus:ring-2 focus:ring-green-500">6</button>
+          <button class="keypad-btn p-4 rounded-lg bg-white/10 text-white font-bold text-lg focus:outline-none focus:ring-2 focus:ring-green-500">7</button>
+          <button class="keypad-btn p-4 rounded-lg bg-white/10 text-white font-bold text-lg focus:outline-none focus:ring-2 focus:ring-green-500">8</button>
+          <button class="keypad-btn p-4 rounded-lg bg-white/10 text-white font-bold text-lg focus:outline-none focus:ring-2 focus:ring-green-500">9</button>
+          <button id="pinClear" class="keypad-btn col-span-1 p-4 rounded-lg bg-red-500/20 text-white font-bold text-lg focus:outline-none focus:ring-2 focus:ring-red-500">C</button>
+          <button class="keypad-btn p-4 rounded-lg bg-white/10 text-white font-bold text-lg focus:outline-none focus:ring-2 focus:ring-green-500">0</button>
+          <button id="pinBackspace" class="keypad-btn p-4 rounded-lg bg-blue-500/20 text-white font-bold text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">⌫</button>
+        </div>
+      </div>
+    </div>
+
     <!-- LOGIN SCREEN -->
     <div
       id="loginScreen"
-      class="fixed inset-0 z-[60] bg-gradient-to-br from-[#1a2f26] via-[#101f18] to-black flex items-center justify-center p-4 transition-opacity duration-500"
+      class="fixed inset-0 z-[60] bg-gradient-to-br from-[#1a2f26] via-[#101f18] to-black flex items-center justify-center p-4 transition-opacity duration-500 hidden"
     >
       <div
         class="absolute top-0 right-0 w-96 h-96 bg-green-500/10 rounded-full blur-3xl -z-10 mix-blend-screen"
@@ -95,9 +139,14 @@
         onAuthStateChanged,
         GoogleAuthProvider,
         signInWithPopup,
+        // Required for signInWithPassword, though not used due to HTML constraints
+        // signInWithEmailAndPassword 
       } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
+      // Import for Realtime Database (not explicitly imported here, but assumed available for RTDB URL)
+      // import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
 
-      // KONEKSI DATABASE
+
+      // KONEKSI DATABASE & AUTHENTICATION
       const firebaseConfig = {
         apiKey: "AIzaSyBKaa7F02csop4ocmmTwYksEE-oTKVkV0Q",
         authDomain: "buku-besar-keuangan.firebaseapp.com",
@@ -112,8 +161,25 @@
 
       const app = initializeApp(firebaseConfig);
       const auth = getAuth(app);
+      // const database = getDatabase(app); // Uncomment if using RTDB specific functions
 
-      // NOTIFIKASI CSS CUSTOM
+      // --- DOM Elements ---
+      const pinScreen = document.getElementById('pinScreen');
+      const loginScreen = document.getElementById('loginScreen');
+      const pinDisplay = document.getElementById('pinDisplay');
+      const pinKeypad = document.getElementById('pinKeypad');
+      const pinClearBtn = document.getElementById('pinClear');
+      const pinBackspaceBtn = document.getElementById('pinBackspace');
+      const pinIndicatorElements = pinDisplay.querySelectorAll('.pin-indicator');
+
+      // --- State Variables ---
+      let currentPin = '';
+      const PIN_LENGTH = 4;
+      const PIN_VERIFICATION_URL = 'https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/konfigurasi_keamanan/pin_gerbang.json';
+      const FIREBASE_AUTH_ENDPOINT = 'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyBKaa7F02csop4ocmmTwYksEE-oTKVkV0Q';
+
+
+      // --- Utility Functions ---
       window.pushNotification = function (pesan, jenis = "sukses") {
         const container = document.getElementById("toastContainer");
         const toast = document.createElement("div");
@@ -140,25 +206,117 @@
         }, 3500);
       };
 
-      // LOGIC AUTENTIKASI
+      function updatePinDisplay() {
+        pinIndicatorElements.forEach((indicator, index) => {
+          if (index < currentPin.length) {
+            indicator.classList.add('pin-indicator-filled');
+            indicator.classList.remove('pin-indicator-empty');
+          } else {
+            indicator.classList.remove('pin-indicator-filled');
+            indicator.classList.add('pin-indicator-empty');
+          }
+        });
+      }
+
+      function resetPinInput() {
+        currentPin = '';
+        updatePinDisplay();
+      }
+
+      // --- PIN Screen Logic ---
+      async function verifyPin() {
+        if (currentPin.length !== PIN_LENGTH) return;
+
+        try {
+          const response = await fetch(PIN_VERIFICATION_URL);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const correctPin = await response.json();
+
+          if (String(correctPin) === currentPin) {
+            // PIN is correct, transition to login screen
+            pinScreen.classList.add('opacity-0', '-translate-y-4');
+            setTimeout(() => {
+              pinScreen.classList.add('hidden');
+              loginScreen.classList.remove('hidden', 'opacity-0', '-translate-y-4');
+              setTimeout(() => loginScreen.classList.add('opacity-100', 'translate-y-0'), 10); // Smooth transition for login screen
+            }, 300);
+          } else {
+            window.pushNotification("PIN Salah, Akses Ditolak!", "error");
+            resetPinInput();
+          }
+        } catch (error) {
+          console.error("Error verifying PIN:", error);
+          window.pushNotification("Gagal memverifikasi PIN. Coba lagi.", "error");
+          resetPinInput();
+        }
+      }
+
+      // --- Login Form Logic ---
       const googleProvider = new GoogleAuthProvider();
 
       window.handleGoogleLogin = async function () {
+        const loginButton = loginScreen.querySelector('button[onclick="handleGoogleLogin()"]');
+        loginButton.disabled = true;
+        const originalText = loginButton.innerHTML;
+        loginButton.innerHTML = '<span>Memverifikasi...</span>';
+        
         try {
-          await signInWithPopup(auth, googleProvider);
+          const result = await signInWithPopup(auth, googleProvider);
+          window.location.href = "index.html";
         } catch (error) {
-          window.pushNotification(
-            "Gagal masuk dengan Google: " + error.message,
-            "error",
-          );
+          console.error("Google Login Error:", error);
+          window.pushNotification("Gagal masuk dengan Google: " + error.message, "error");
+          loginButton.disabled = false;
+          loginButton.innerHTML = originalText;
         }
       };
 
+      // --- Initialization ---
       document.addEventListener("DOMContentLoaded", function () {
+        // 1. Initial State: PIN screen visible, Login screen hidden
+        pinScreen.classList.remove('hidden');
+        loginScreen.classList.add('hidden');
+        resetPinInput(); // Ensure PIN display is reset on load
+
+        // Add event listeners for keypad buttons
+        pinKeypad.querySelectorAll('.keypad-btn').forEach(button => {
+          button.addEventListener('click', () => {
+            const value = button.textContent;
+
+            if (!isNaN(value)) { // Number button
+              if (currentPin.length < PIN_LENGTH) {
+                currentPin += value;
+                updatePinDisplay();
+                if (currentPin.length === PIN_LENGTH) {
+                  verifyPin();
+                }
+              }
+            } else if (value === 'C') { // Clear button
+              resetPinInput();
+            } else if (value === '⌫') { // Backspace button
+              if (currentPin.length > 0) {
+                currentPin = currentPin.slice(0, -1);
+                updatePinDisplay();
+              }
+            }
+          });
+        });
+
+        // Google login is handled via inline onclick on the button in the HTML
+
+
+        // 2. Check auth state to potentially skip PIN/Login if already logged in
         onAuthStateChanged(auth, (user) => {
           if (user) {
-            // Redirect to main app if logged in
+            // User is already logged in, redirect to dashboard
             window.location.href = "index.html";
+          } else {
+            // User is not logged in, ensure PIN screen is shown and login is hidden
+            pinScreen.classList.remove('hidden');
+            loginScreen.classList.add('hidden');
+            resetPinInput();
           }
         });
       });

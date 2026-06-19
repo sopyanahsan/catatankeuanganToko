@@ -7,6 +7,7 @@
       rel="apple-touch-icon"
       href="https://cdn-icons-png.flaticon.com/512/3062/3062634.png"
     />
+    <link rel="icon" type="image/png" href="favicon.png" />
     <meta charset="UTF-8" />
     <meta
       name="viewport"
@@ -16,6 +17,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap");
 
@@ -51,6 +53,37 @@
         background: #9ebd9f;
       }
 
+      /* Page Transition Animation */
+      @keyframes fadeOutTransition {
+        from {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        to {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+      }
+
+      @keyframes fadeInTransition {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .page-transition-out {
+        animation: fadeOutTransition 0.4s ease-in-out forwards;
+      }
+
+      .page-transition-in {
+        animation: fadeInTransition 0.4s ease-in-out forwards;
+      }
+
       input[type="date"]::-webkit-calendar-picker-indicator {
         cursor: pointer;
         opacity: 0.6;
@@ -61,13 +94,52 @@
         box-shadow: 0 8px 32px rgba(28, 64, 46, 0.04);
         border: 1px solid rgba(255, 255, 255, 0.4);
       }
+
+      /* Custom CSS for SweetAlert2 modals */
+      div:where(.swal2-container) div:where(.swal2-popup) {
+        border-radius: 24px;
+        padding: 24px;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        box-shadow: 0 10px 40px -10px rgba(0,0,0,0.15);
+      }
+      div:where(.swal2-container) h2:where(.swal2-title) {
+        font-weight: 800;
+        color: #1a2f26;
+        padding-top: 0;
+      }
+      div:where(.swal2-container) div:where(.swal2-html-container) {
+        font-weight: 500;
+        color: #4b5563;
+        font-size: 14px;
+      }
+      div:where(.swal2-container) button:where(.swal2-confirm) {
+        background-color: #1e5c33 !important;
+        border-radius: 12px;
+        font-weight: 700;
+        padding: 12px 24px;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      div:where(.swal2-container) button:where(.swal2-cancel) {
+        background-color: #ef4444 !important;
+        border-radius: 12px;
+        font-weight: 700;
+        padding: 12px 24px;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
     </style>
   </head>
   <body class="p-3 md:p-6 pb-10">
-    <div
-      id="toastContainer"
-      class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-3 pointer-events-none w-full max-w-sm px-4"
-    ></div>
+      <div
+        id="toastContainer"
+        class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-3 pointer-events-none w-full max-w-sm px-4"
+      ></div>
+
+      <!-- Page Transition Overlay -->
+      <div id="pageTransitionOverlay" class="fixed inset-0 bg-white z-[999] opacity-0 pointer-events-none transition-opacity duration-300"></div>
 
     <div id="mainApp" class="hidden opacity-0 transition-opacity duration-500">
       
@@ -81,10 +153,10 @@
         </div>
 
         <div class="flex items-center bg-[#f0f2ed]/80 backdrop-blur-md rounded-full px-2 py-1.5 border border-white/40 shadow-sm overflow-x-auto whitespace-nowrap">
-          <a href="index.html" class="px-5 py-2 text-xs font-bold text-gray-700 hover:text-[#1e5c33] transition uppercase tracking-widest">DASHBOARD</a>
-          <a href="produk.html" class="px-5 py-2 text-xs font-bold text-gray-500 hover:text-[#1e5c33] transition uppercase tracking-widest">PRODUK</a>
-          <a href="supplier.html" class="px-5 py-2 text-xs font-bold text-gray-500 hover:text-[#1e5c33] transition uppercase tracking-widest">NOTA SUPPLIER</a>
-          <a href="opname.html" class="px-5 py-2 text-xs font-bold text-gray-500 hover:text-[#1e5c33] transition uppercase tracking-widest">OPNAME</a>
+          <a href="index.html" class="nav-link px-5 py-2 text-xs font-bold text-gray-700 hover:text-[#1e5c33] transition uppercase tracking-widest">DASHBOARD</a>
+          <a href="produk.html" class="nav-link px-5 py-2 text-xs font-bold text-gray-500 hover:text-[#1e5c33] transition uppercase tracking-widest">PRODUK</a>
+          <a href="supplier.html" class="nav-link px-5 py-2 text-xs font-bold text-gray-500 hover:text-[#1e5c33] transition uppercase tracking-widest">NOTA SUPPLIER</a>
+          <a href="opname.html" class="nav-link px-5 py-2 text-xs font-bold text-gray-500 hover:text-[#1e5c33] transition uppercase tracking-widest">OPNAME</a>
           <button onclick="bukaModalProfil()" class="ml-2 bg-[#1a2f26] hover:bg-[#12231b] text-white text-xs font-bold px-5 py-2.5 rounded-full transition uppercase tracking-widest shrink-0">
             AKUN SAYA
           </button>
@@ -132,6 +204,29 @@
                     Status Hari Ini
                   </p>
                   <p class="text-sm font-bold leading-tight" id="valLaba">
+                    Rp 0
+                  </p>
+                </div>
+              </div>
+
+              <!-- New Profit Hari Ini Badge -->
+              <div
+                id="profitHariIniBadge"
+                class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/30 shadow-sm mt-3"
+              >
+                <div
+                  id="iconProfitHariIni"
+                  class="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-bold text-gray-400"
+                >
+                  ~
+                </div>
+                <div>
+                  <p
+                    class="text-[10px] uppercase tracking-wider text-green-50 opacity-90 leading-none"
+                  >
+                    PROFIT HARI INI
+                  </p>
+                  <p class="text-sm font-bold leading-tight" id="valProfitHariIni">
                     Rp 0
                   </p>
                 </div>
@@ -1030,7 +1125,17 @@
       };
 
       window.hapusArusKas = async function(tglKey, id, sumberDana, nominal, jenis) {
-        if (!confirm("Yakin ingin menghapus transaksi ini?")) return;
+        const result = await Swal.fire({
+            title: 'Hapus Transaksi?',
+            text: "Yakin ingin menghapus transaksi ini?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#1e5c33',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+        });
+        if (!result.isConfirmed) return;
         
         try {
           const snapshot = await get(child(ref(db), `arus_kas/` + tglKey));
@@ -1788,6 +1893,82 @@
         }
       }
 
+      async function updateProfitHariIni() {
+        try {
+          const response = await fetch("https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/snapshot_brankas.json");
+          if (!response.ok) {
+            throw new Error("Failed to fetch snapshot_brankas");
+          }
+          const snapshotData = await response.json();
+          
+          if (!snapshotData || typeof snapshotData !== 'object' || Object.keys(snapshotData).length === 0) {
+            // No data available, set to Rp 0
+            document.getElementById("valProfitHariIni").innerText = "Rp 0";
+            document.getElementById("iconProfitHariIni").innerText = "~";
+            document.getElementById("iconProfitHariIni").className = "w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-bold text-gray-400";
+            return;
+          }
+
+          // Convert to array and sort by timestamp (newest first)
+          const snapshotArray = Object.entries(snapshotData).map(([key, value]) => {
+            const timestamp = value.timestamp || value.createdAt || new Date(0).toISOString();
+            return {
+              key: key,
+              value: Number(value) || value.nominal || 0,
+              timestamp: timestamp
+            };
+          });
+
+          // Sort by timestamp descending (newest first)
+          snapshotArray.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+          if (snapshotArray.length < 2) {
+            // Only one snapshot, set to Rp 0 with neutral display
+            document.getElementById("valProfitHariIni").innerText = "Rp 0";
+            document.getElementById("iconProfitHariIni").innerText = "~";
+            document.getElementById("iconProfitHariIni").className = "w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-bold text-gray-400";
+            return;
+          }
+
+          const snapshotTerbaru = snapshotArray[0].value;
+          const snapshotSebelumnya = snapshotArray[1].value;
+          const nilaiProfit = snapshotTerbaru - snapshotSebelumnya;
+
+          const badgeElement = document.getElementById("profitHariIniBadge");
+          const iconElement = document.getElementById("iconProfitHariIni");
+          const valueElement = document.getElementById("valProfitHariIni");
+
+          // Format currency
+          const formatRp = (num) => "Rp " + Math.abs(num).toLocaleString("id-ID");
+
+          if (nilaiProfit > 0) {
+            // Positive profit: green background, up arrow, show value
+            badgeElement.className = "inline-flex items-center gap-2 bg-green-100/40 backdrop-blur-md px-4 py-2 rounded-full border border-green-300/50 shadow-sm mt-3";
+            iconElement.className = "w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-bold text-green-600";
+            iconElement.innerText = "🔺";
+            valueElement.innerText = formatRp(nilaiProfit);
+          } else if (nilaiProfit < 0) {
+            // Negative profit: red background, down arrow, show value without minus sign
+            badgeElement.className = "inline-flex items-center gap-2 bg-red-100/40 backdrop-blur-md px-4 py-2 rounded-full border border-red-300/50 shadow-sm mt-3";
+            iconElement.className = "w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-bold text-red-600";
+            iconElement.innerText = "🔻";
+            valueElement.innerText = formatRp(nilaiProfit);
+          } else {
+            // Zero profit: neutral display
+            badgeElement.className = "inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/30 shadow-sm mt-3";
+            iconElement.className = "w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-bold text-gray-400";
+            iconElement.innerText = "~";
+            valueElement.innerText = "Rp 0";
+          }
+        } catch (e) {
+          console.error("Gagal load profit hari ini:", e);
+          // Set neutral state on error
+          document.getElementById("valProfitHariIni").innerText = "Rp 0";
+          document.getElementById("iconProfitHariIni").innerText = "~";
+          document.getElementById("iconProfitHariIni").className = "w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-bold text-gray-400";
+        }
+      }
+
       async function calculateAndRenderApp() {
         const dbStatus = document.getElementById("statusKoneksi");
         dataRiwayatGlobal = await loadFirebaseData();
@@ -1886,26 +2067,26 @@
         document.getElementById("valModal").innerText = formatRp(
           dashboardData.modalBersih,
         );
-        let iconLaba = document.getElementById("iconLaba");
-        let valLaba = document.getElementById("valLaba");
-        if (dashboardData.status === "Untung") {
-          iconLaba.className =
-            "w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-bold text-green-600";
-          iconLaba.innerHTML = "↑";
-          valLaba.innerText = "+ " + formatRp(Math.abs(dashboardData.selisih));
-        } else if (dashboardData.status === "Defisit") {
-          iconLaba.className =
-            "w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-bold text-red-600";
-          iconLaba.innerHTML = "↓";
-          valLaba.innerText = "- " + formatRp(Math.abs(dashboardData.selisih));
-        } else {
-          iconLaba.className =
-            "w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-bold text-gray-400";
-          iconLaba.innerHTML = "~";
-          valLaba.innerText = "Seimbang";
+        
+        // PENGELUARAN HARI INI
+        const tglHariIni = new Date().toISOString().split('T')[0];
+        let pengeluaranHariIni = 0;
+        if (dataArusKas[tglHariIni]) {
+            dataArusKas[tglHariIni].forEach(trx => {
+                if (trx.jenis === 'out') pengeluaranHariIni += trx.nominal;
+            });
         }
 
+        let iconLaba = document.getElementById("iconLaba");
+        let valLaba = document.getElementById("valLaba");
+        iconLaba.className = "w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-bold text-red-600";
+        iconLaba.innerHTML = "↓";
+        valLaba.innerText = formatRp(pengeluaranHariIni);
+
         window.setWaktuGrafik("7");
+
+        // Update Profit Hari Ini
+        await updateProfitHariIni();
 
         // Set List Brankas & Ekstrak Data
         document.getElementById("list-input-tabel").innerHTML = "";
@@ -2110,6 +2291,35 @@
         }
       };
 
+      // PAGE TRANSITION HANDLER
+      window.initPageTransition = function() {
+        const navLinks = document.querySelectorAll('a.nav-link');
+        navLinks.forEach(link => {
+          link.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+            // Jangan trigger transition untuk link yang sama
+            if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
+              e.preventDefault();
+              performPageTransition(href);
+            }
+          });
+        });
+      };
+
+      window.performPageTransition = function(targetUrl) {
+        const overlay = document.getElementById('pageTransitionOverlay');
+        const mainApp = document.getElementById('mainApp');
+
+        // Fade out current page
+        mainApp.classList.add('page-transition-out');
+        overlay.style.opacity = '0.5';
+        overlay.style.pointerEvents = 'auto';
+
+        setTimeout(() => {
+          window.location.href = targetUrl;
+        }, 300);
+      };
+
       function startRealtimeLogsListener() {
         const logsRef = ref(db, "activity_logs");
         onValue(logsRef, (snapshot) => {
@@ -2161,6 +2371,13 @@
 
       document.addEventListener("DOMContentLoaded", function () {
         const mainApp = document.getElementById("mainApp");
+
+        // Initialize page transition handler
+        window.initPageTransition();
+
+        // Fade in when page loads
+        const overlay = document.getElementById('pageTransitionOverlay');
+        overlay.style.opacity = '0';
 
         onAuthStateChanged(auth, (user) => {
           if (user) {

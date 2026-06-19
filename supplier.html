@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nota Supplier - Catatan Keuangan</title>
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="favicon.png" />
     <style>
         body { background-color: #f2f7f4; font-family: "Plus Jakarta Sans", sans-serif; color: #1a2f26; }
         .modal-bg { background-color: rgba(14, 31, 23, 0.6); backdrop-filter: blur(4px); }
@@ -905,7 +907,17 @@
         });
 
         window.batalLunas = async (id, terbayar, riwayatStr) => {
-            if (!confirm("Batalkan status lunas untuk transaksi ini?")) return;
+            const result = await Swal.fire({
+                title: 'Batal Lunas?',
+                text: "Batalkan status lunas untuk transaksi ini?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#1e5c33',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, batalkan!',
+                cancelButtonText: 'Kembali'
+            });
+            if (!result.isConfirmed) return;
             try {
                 let riwayat = [];
                 if (riwayatStr) {
@@ -934,7 +946,17 @@
         };
 
         window.hapusRiwayatCicilan = async (id, rIndex, riwayatStr, nominal, terbayarSaatIni) => {
-            if (!confirm(`Apakah Anda yakin ingin membatalkan pembayaran cicilan sebesar ${formatRupiah(nominal)}?`)) return;
+            const result = await Swal.fire({
+                title: 'Batalkan Pembayaran?',
+                text: `Apakah Anda yakin ingin membatalkan pembayaran cicilan sebesar ${formatRupiah(nominal)}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#1e5c33',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, batalkan!',
+                cancelButtonText: 'Kembali'
+            });
+            if (!result.isConfirmed) return;
             
             try {
                 let riwayat = [];
@@ -965,7 +987,17 @@
         };
 
         window.markLunas = async (id, total, terbayar, riwayatStr) => {
-            if (!confirm("Tandai transaksi ini sebagai Lunas?")) return;
+            const result = await Swal.fire({
+                title: 'Tandai Lunas?',
+                text: "Tandai transaksi ini sebagai Lunas?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#1e5c33',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, lunas!',
+                cancelButtonText: 'Batal'
+            });
+            if (!result.isConfirmed) return;
             try {
                 let riwayat = [];
                 if (riwayatStr) {
@@ -997,7 +1029,17 @@
         };
 
         window.hapusNota = async (id) => {
-            if (!confirm("Apakah Anda yakin ingin menghapus data nota ini?")) return;
+            const result = await Swal.fire({
+                title: 'Hapus Nota?',
+                text: "Apakah Anda yakin ingin menghapus data nota ini?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#1e5c33',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
+            });
+            if (!result.isConfirmed) return;
             try {
                 await fetch(`https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/nota_supplier/${id}.json`, {
                     method: 'DELETE'

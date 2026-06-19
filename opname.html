@@ -3,15 +3,17 @@
 <head>
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#1e5c33" />
-  <link
-    rel="apple-touch-icon"
-    href="https://cdn-icons-png.flaticon.com/512/3062/3062634.png"
-  />
+    <link
+      rel="apple-touch-icon"
+      href="https://cdn-icons-png.flaticon.com/512/3062/3062634.png"
+    />
+    <link rel="icon" type="image/png" href="favicon.png" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Opname Stok - Catatan Keuangan</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
     @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap");
@@ -494,14 +496,24 @@
     };
 
     window.batalkanSesi = function() {
-      if(confirm("Yakin ingin membatalkan sesi? Data input fisik akan hilang.")) {
-        document.getElementById('activeSessionSection').classList.add('hidden');
-        document.getElementById('setupSection').classList.remove('hidden');
-        selectedProducts.clear();
-        renderProdukList();
-        updateMulaiButton();
-        window.scrollTo({top: 0, behavior: 'smooth'});
-      }
+      Swal.fire({
+          title: 'Batalkan Sesi?',
+          text: "Yakin ingin membatalkan sesi? Data input fisik akan hilang.",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#1e5c33',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Ya, batalkan!',
+          cancelButtonText: 'Kembali'
+      }).then((result) => {
+          if (result.isConfirmed) {
+              document.getElementById('activeSessionSection').classList.add('hidden');
+              document.getElementById('setupSection').classList.remove('hidden');
+              localStorage.removeItem('opname_draft');
+              draftItems = [];
+              window.pushNotification("Sesi opname dibatalkan", "peringatan");
+          }
+      });
     };
 
     window.simpanSesi = async function() {

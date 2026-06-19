@@ -3,10 +3,11 @@
 <head>
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#1e5c33" />
-  <link
-    rel="apple-touch-icon"
-    href="https://cdn-icons-png.flaticon.com/512/3062/3062634.png"
-  />
+    <link
+      rel="apple-touch-icon"
+      href="https://cdn-icons-png.flaticon.com/512/3062/3062634.png"
+    />
+    <link rel="icon" type="image/png" href="favicon.png" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Tren Harga Produk - Catatan Keuangan</title>
@@ -14,6 +15,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
     @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap");
@@ -798,6 +800,16 @@
         let totalStok = 0;
         let isSemua = namaProduk === "Semua Kategori";
         let unitText = isSemua ? "Unit" : "Unit"; 
+        
+        // Dapatkan stok awal dari dataProdukSemua (daftar produk utama)
+        const produkUtama = dataProdukSemua.find(p => p.nama.toLowerCase() === namaProduk.toLowerCase());
+        if (produkUtama && !isSemua) {
+            totalStok = parseFloat(produkUtama.stok) || 0;
+            unitText = produkUtama.unit || unitText;
+        } else if (isSemua) {
+             // Untuk "Semua Kategori", jumlahkan semua stok awal dari semua produk
+             totalStok = dataProdukSemua.reduce((sum, p) => sum + (parseFloat(p.stok) || 0), 0);
+        }
 
         if (!isSemua && window.latestPricesMap && window.latestPricesMap[namaProduk.toLowerCase()]) {
             unitText = window.latestPricesMap[namaProduk.toLowerCase()].unit;
@@ -957,7 +969,17 @@
     }
 
     async function hapusProduk(id) {
-      if (!confirm('Apakah Anda yakin ingin menghapus produk ini?')) return;
+      const result = await Swal.fire({
+          title: 'Hapus Produk?',
+          text: "Apakah Anda yakin ingin menghapus produk ini?",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#1e5c33',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Ya, hapus!',
+          cancelButtonText: 'Batal'
+      });
+      if (!result.isConfirmed) return;
 
       try {
         const response = await fetch(`${FIREBASE_BASE_URL}/harga_produk/${id}.json`, {
@@ -1387,9 +1409,9 @@
     }
 
     // Jalankan penarikan data pertama kali halaman dibuka
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", async () => {
+      await loadDaftarProduk();
       loadDataProdukFromFirebase();
-      loadDaftarProduk();
     });
   </script>
 </body>
