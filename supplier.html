@@ -84,40 +84,14 @@
             </div>
         </div>
 
-        <!-- ========== BUTTON TAMBAH NOTA BARU ========== -->
-        <div class="flex justify-end mb-4">
+        <!-- ========== BUTTON TAMBAH NOTA BARU & SUPPLIER ========== -->
+        <div class="flex justify-end gap-3 mb-4">
+            <button onclick="window.bukaModalDirektoriSupplier()" class="bg-[#e8f3ec] hover:bg-[#cbe6d6] text-[#1e5c33] font-extrabold py-3 px-6 rounded-xl transition shadow-md uppercase tracking-wider text-sm flex items-center justify-center gap-2 border border-[#1e5c33]/20">
+                <span>📒 Supplier</span>
+            </button>
             <button onclick="window.bukaModalTambahNota()" class="bg-[#1e5c33] hover:bg-[#154626] text-white font-extrabold py-3 px-6 rounded-xl transition shadow-md uppercase tracking-wider text-sm flex items-center justify-center gap-2">
                 <span>➕ Tambah Nota Baru</span>
             </button>
-        </div>
-
-        <!-- ========== DIREKTORI SUPPLIER ========== -->
-        <div>
-            <div class="grid grid-cols-1 lg:grid-cols-1 gap-6">
-            <!-- Direktori Kontak Supplier -->
-            <div>
-                <div class="glass-card p-6 rounded-[2rem]">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-                        <h2 class="text-lg font-bold text-[#1a2f26] flex items-center gap-2">📒 Direktori Kontak Supplier</h2>
-                        <button onclick="window.bukaModalTambahSupplier()" class="bg-[#e8f3ec] hover:bg-[#cbe6d6] text-[#1e5c33] font-bold text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-1.5 shrink-0">
-                            <span>＋</span> Tambah Supplier Baru
-                        </button>
-                    </div>
-
-                    <!-- Search Input -->
-                    <div class="mb-5">
-                        <div class="relative">
-                            <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                            <input type="text" id="searchSupplier" placeholder="Cari nama supplier..." class="w-full bg-gray-50 border border-gray-200 p-3 pl-10 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
-                        </div>
-                    </div>
-
-                    <!-- Grid Card Supplier -->
-                    <div id="supplierCardGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[600px] overflow-y-auto pr-1">
-                        <div class="col-span-full text-center text-gray-400 animate-pulse font-bold py-8 text-sm">Memuat direktori supplier...</div>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- ========== TABEL RIWAYAT NOTA (Full Width) ========== -->
@@ -298,6 +272,100 @@
                         <span class="text-sm font-bold text-red-600 group-hover:text-red-700">Keluar (Logout)</span>
                         <svg class="w-4 h-4 text-red-400 group-hover:text-red-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DETAIL NOTA -->
+    <div id="modalDetailNota" class="fixed inset-0 modal-bg z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300" id="modalDetailNotaContent">
+            <div class="p-5 flex justify-between items-center text-white bg-[#1a2f26]">
+                <h3 class="font-extrabold text-lg flex items-center gap-2">📋 Detail Nota</h3>
+                <button onclick="window.tutupModalDetailNota()" class="text-white/70 hover:text-white text-2xl font-bold transition">&times;</button>
+            </div>
+            <div class="p-6 overflow-y-auto" style="max-height: 75vh" id="detailNotaBody">
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDIT NOTA -->
+    <div id="modalEditNota" class="fixed inset-0 modal-bg z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300" id="modalEditNotaContent">
+            <div class="p-5 flex justify-between items-center text-white bg-[#1a2f26]">
+                <h3 class="font-extrabold text-lg flex items-center gap-2">✏️ Edit Nota</h3>
+                <button onclick="window.tutupModalEditNota()" class="text-white/70 hover:text-white text-2xl font-bold transition">&times;</button>
+            </div>
+            <div class="p-6 overflow-y-auto" style="max-height: 75vh">
+                <form id="editNotaForm" class="space-y-4">
+                    <input type="hidden" id="editNotaId">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Tanggal Nota</label>
+                        <input type="date" id="editTanggal" required class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Nama Supplier</label>
+                        <select id="editSupplier" required class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                            <option value="">-- Pilih Supplier --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Status Pembayaran</label>
+                        <select id="editStatus" required class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                            <option value="Lunas">Lunas</option>
+                            <option value="Utang">Utang</option>
+                        </select>
+                    </div>
+                    <div id="editJatuhTempoContainer" class="hidden">
+                        <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Jatuh Tempo</label>
+                        <input type="date" id="editJatuhTempo" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                    </div>
+
+                    <!-- Daftar Item (read-only summary) -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Daftar Produk</label>
+                        <div id="editItemsList" class="bg-gray-50 border border-gray-200 rounded-xl p-3 space-y-1 text-sm font-bold text-gray-700"></div>
+                        <p class="text-[10px] text-gray-400 mt-1">*Daftar produk tidak dapat diubah setelah nota dibuat.</p>
+                    </div>
+
+                    <div class="bg-gray-50 border border-gray-200 rounded-xl p-3 flex justify-between items-center">
+                        <span class="text-xs font-bold text-gray-500 uppercase">Total Nota</span>
+                        <span id="editTotalNota" class="text-lg font-extrabold text-[#1a2f26]">Rp 0</span>
+                    </div>
+
+                    <button type="submit" id="btnSimpanEditNota" class="w-full bg-[#1e5c33] hover:bg-[#154626] text-white font-extrabold py-3.5 rounded-xl transition shadow-md uppercase tracking-wider text-sm mt-2 flex items-center justify-center gap-2">
+                        💾 Simpan Perubahan
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DIREKTORI SUPPLIER (POPUP) -->
+    <div id="modalDirektoriSupplier" class="fixed inset-0 modal-bg z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white w-full max-w-2xl rounded-[2rem] shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300" id="modalDirektoriSupplierContent">
+            <div class="p-5 flex justify-between items-center text-white bg-[#1a2f26]">
+                <h3 class="font-extrabold text-lg flex items-center gap-2">📒 Direktori Kontak Supplier</h3>
+                <button onclick="window.tutupModalDirektoriSupplier()" class="text-white/70 hover:text-white text-2xl font-bold transition">&times;</button>
+            </div>
+            <div class="p-6 overflow-y-auto" style="max-height: 75vh">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+                    <button onclick="window.bukaModalTambahSupplier()" class="bg-[#e8f3ec] hover:bg-[#cbe6d6] text-[#1e5c33] font-bold text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-1.5 shrink-0">
+                        <span>＋</span> Tambahkan Supplier Baru
+                    </button>
+                </div>
+
+                <!-- Search Input -->
+                <div class="mb-5">
+                    <div class="relative">
+                        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <input type="text" id="searchSupplier" placeholder="Cari nama supplier..." class="w-full bg-gray-50 border border-gray-200 p-3 pl-10 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                    </div>
+                </div>
+
+                <!-- Grid Card Supplier -->
+                <div id="supplierCardGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto pr-1">
+                    <div class="col-span-full text-center text-gray-400 animate-pulse font-bold py-8 text-sm">Memuat direktori supplier...</div>
                 </div>
             </div>
         </div>
@@ -605,6 +673,31 @@
         };
 
         // ==========================================
+        // MODAL DIREKTORI SUPPLIER (POPUP)
+        // ==========================================
+        window.bukaModalDirektoriSupplier = function () {
+            const modal = document.getElementById("modalDirektoriSupplier");
+            const content = document.getElementById("modalDirektoriSupplierContent");
+            modal.classList.remove("hidden");
+            setTimeout(() => {
+                modal.classList.remove("opacity-0");
+                content.classList.remove("scale-95");
+                content.classList.add("scale-100");
+            }, 10);
+        };
+
+        window.tutupModalDirektoriSupplier = function () {
+            const modal = document.getElementById("modalDirektoriSupplier");
+            const content = document.getElementById("modalDirektoriSupplierContent");
+            modal.classList.add("opacity-0");
+            content.classList.remove("scale-100");
+            content.classList.add("scale-95");
+            setTimeout(() => {
+                modal.classList.add("hidden");
+            }, 300);
+        };
+
+        // ==========================================
         // MODAL TAMBAH SUPPLIER BARU
         // ==========================================
         window.bukaModalTambahSupplier = function () {
@@ -774,8 +867,17 @@
                         <h3 class="font-extrabold text-slate-800 text-sm leading-tight">${item.nama || '-'}</h3>
                         <span class="${badgeClass} text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider whitespace-nowrap shrink-0">${item.kategori || '-'}</span>
                     </div>
-                    <p class="text-xs text-gray-400 leading-relaxed">${item.alamat || '-'}</p>
-                    <div class="flex items-center gap-2 mt-auto pt-1">
+                    <div class="space-y-1 mt-1">
+                        <div class="flex items-start gap-1.5">
+                            <span class="text-[10px] text-gray-400 font-bold uppercase w-12 shrink-0 pt-px">No HP</span>
+                            <span class="text-xs font-bold text-gray-700">${item.hp || '-'}</span>
+                        </div>
+                        <div class="flex items-start gap-1.5">
+                            <span class="text-[10px] text-gray-400 font-bold uppercase w-12 shrink-0 pt-px">Alamat</span>
+                            <span class="text-xs text-gray-600 leading-relaxed">${item.alamat || '-'}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 mt-auto pt-2">
                         <a href="${waLink}" target="_blank" rel="noopener noreferrer" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs py-2 px-3 rounded-lg transition flex items-center justify-center gap-1.5 shadow-sm">
                             💬 Hubungi WA
                         </a>
@@ -1046,17 +1148,23 @@
                          ${riwayatHTML}
                        </div>`;
                 }
+                const itemDataStr = encodeURIComponent(JSON.stringify(item));
                 let actionButtons = '';
+                actionButtons += `<button onclick="window.bukaModalDetailNota('${itemDataStr}')" class="text-[11px] bg-indigo-100 hover:bg-indigo-200 text-indigo-800 font-bold px-3 py-1.5 rounded-lg transition-colors mb-1.5 w-full text-center tracking-wide">📋 Detail</button>`;
+                actionButtons += `<button onclick="window.bukaModalEditNota('${itemDataStr}')" class="text-[11px] bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-3 py-1.5 rounded-lg transition-colors mb-1.5 w-full text-center tracking-wide">✏️ Edit</button>`;
                 if (!isLunas) {
                     actionButtons += `<button onclick="window.bukaModalCicilan('${item.id}', ${total}, ${terbayar}, '${riwayatStr}')" class="text-[11px] bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold px-3 py-1.5 rounded-lg transition-colors mb-1.5 w-full text-center tracking-wide flex items-center justify-center gap-1">💸 Bayar Cicilan</button>`;
-                    actionButtons += `<button onclick="window.markLunas('${item.id}', ${total}, ${terbayar}, '${riwayatStr}')" class="text-[11px] bg-orange-100 hover:bg-orange-200 text-orange-800 font-bold px-3 py-1.5 rounded-lg transition-colors mb-1.5 w-full text-center tracking-wide">✏️ Tandai Lunas</button>`;
+                    actionButtons += `<button onclick="window.markLunas('${item.id}', ${total}, ${terbayar}, '${riwayatStr}')" class="text-[11px] bg-orange-100 hover:bg-orange-200 text-orange-800 font-bold px-3 py-1.5 rounded-lg transition-colors mb-1.5 w-full text-center tracking-wide">✅ Tandai Lunas</button>`;
                 } else if (item.riwayat_cicilan && item.riwayat_cicilan.length > 0) {
                     actionButtons += `<button onclick="window.batalLunas('${item.id}', ${terbayar}, '${riwayatStr}')" class="text-[11px] bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-bold px-3 py-1.5 rounded-lg transition-colors mb-1.5 w-full text-center tracking-wide">↩️ Batal Lunas</button>`;
                 }
                 actionButtons += `<button onclick="window.hapusNota('${item.id}')" class="text-[11px] bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-700 font-bold px-3 py-1.5 rounded-lg transition-colors w-full text-center tracking-wide">🗑️ Hapus</button>`;
                 let itemsHtml = '';
                 if (item.items && Array.isArray(item.items)) {
-                    itemsHtml = item.items.map(i => `&bull; ${i.produk} <span class="text-gray-400">(${i.unit} Unit)</span>`).join('<br>');
+                    itemsHtml = item.items.map(i => {
+                        const sub = (i.unit || 0) * (i.harga_beli || 0);
+                        return `<div class="flex justify-between items-baseline gap-2"><span>&bull; ${i.produk} <span class="text-gray-400">(${i.unit} x ${formatRupiah(i.harga_beli)})</span></span><span class="text-gray-500 font-bold whitespace-nowrap">${formatRupiah(sub)}</span></div>`;
+                    }).join('');
                 } else if (item.produk) {
                     itemsHtml = `&bull; ${item.produk} <span class="text-gray-400">(${item.qty || 0} Unit)</span>`;
                 }
@@ -1064,7 +1172,7 @@
                 tr.innerHTML = `
                     <td class="p-3 pl-4 align-top"><div class="text-xs font-bold text-gray-500">${formatDate(item.tanggal)}</div></td>
                     <td class="p-3 align-top"><div class="text-sm font-extrabold text-[#1a2f26]">${item.supplier}</div></td>
-                    <td class="p-3 align-top"><div class="text-[11px] font-bold text-gray-700 leading-relaxed">${itemsHtml}</div></td>
+                    <td class="p-3 align-top"><div class="text-[11px] font-bold text-gray-700 leading-snug">${itemsHtml}</div></td>
                     <td class="p-3 text-right align-top"><div class="text-sm font-extrabold text-[#1a2f26]">${formatRupiah(total)}</div></td>
                     <td class="p-3 text-center align-top">${statusBadge}</td>
                     <td class="p-3 text-center align-top"><div class="flex flex-col items-center justify-center max-w-[120px] mx-auto">${actionButtons}</div></td>
@@ -1229,6 +1337,169 @@
                 window.pushNotification("Gagal menghapus nota.", "error");
             }
         };
+
+        // ==========================================
+        // MODAL DETAIL NOTA
+        // ==========================================
+        window.bukaModalDetailNota = function (encodedData) {
+            const item = JSON.parse(decodeURIComponent(encodedData));
+            const total = parseFloat(item.total_nota || item.total) || 0;
+            let terbayar = parseFloat(item.terbayar) || 0;
+            if (item.status === 'Lunas' && terbayar === 0) terbayar = total;
+
+            let itemsHtml = '<p class="text-gray-400 text-xs italic">Tidak ada data produk</p>';
+            if (item.items && Array.isArray(item.items) && item.items.length > 0) {
+                itemsHtml = '<div class="space-y-2">' + item.items.map(i => {
+                    const sub = (i.unit || 0) * (i.harga_beli || 0);
+                    return `<div class="flex justify-between items-center bg-gray-50 rounded-lg px-3 py-2">
+                        <div><span class="font-bold text-sm text-gray-800">${i.produk}</span><br><span class="text-[10px] text-gray-400">${i.unit} x ${formatRupiah(i.harga_beli)}</span></div>
+                        <span class="font-bold text-sm text-gray-700">${formatRupiah(sub)}</span>
+                    </div>`;
+                }).join('') + '</div>';
+            }
+
+            let riwayatHtml = '';
+            if (item.riwayat_cicilan && Array.isArray(item.riwayat_cicilan) && item.riwayat_cicilan.length > 0) {
+                riwayatHtml = `<div class="mt-4"><p class="text-xs font-bold text-gray-500 uppercase mb-2">Riwayat Pembayaran</p><div class="space-y-1">` +
+                    item.riwayat_cicilan.map(r => `<div class="flex justify-between bg-green-50 rounded-lg px-3 py-2 text-xs"><span class="text-gray-600">${formatDate(r.tanggal)}</span><span class="font-bold text-green-700">+${formatRupiah(r.nominal)}</span></div>`).join('') +
+                    `</div></div>`;
+            }
+
+            const body = document.getElementById('detailNotaBody');
+            body.innerHTML = `
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div><p class="text-[10px] text-gray-400 font-bold uppercase">Tanggal</p><p class="font-bold text-sm text-gray-800">${formatDate(item.tanggal)}</p></div>
+                        <div><p class="text-[10px] text-gray-400 font-bold uppercase">Supplier</p><p class="font-bold text-sm text-gray-800">${item.supplier || '-'}</p></div>
+                        <div><p class="text-[10px] text-gray-400 font-bold uppercase">Status</p><span class="${item.status === 'Lunas' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'} text-[10px] font-bold px-2.5 py-1 rounded-full uppercase">${item.status}</span></div>
+                        <div><p class="text-[10px] text-gray-400 font-bold uppercase">Jatuh Tempo</p><p class="font-bold text-sm text-gray-800">${item.jatuh_tempo && item.jatuh_tempo !== '-' ? formatDate(item.jatuh_tempo) : '-'}</p></div>
+                    </div>
+                    <div><p class="text-xs font-bold text-gray-500 uppercase mb-2">Daftar Produk</p>${itemsHtml}</div>
+                    <div class="bg-[#1a2f26] text-white rounded-xl p-4 flex justify-between items-center">
+                        <span class="text-xs font-bold uppercase">Total Nota</span>
+                        <span class="text-xl font-extrabold">${formatRupiah(total)}</span>
+                    </div>
+                    ${item.status === 'Utang' ? `<div class="flex justify-between text-sm"><span class="text-gray-500 font-bold">Terbayar</span><span class="font-bold text-green-600">${formatRupiah(terbayar)}</span></div><div class="flex justify-between text-sm"><span class="text-gray-500 font-bold">Sisa Utang</span><span class="font-bold text-red-600">${formatRupiah(total - terbayar)}</span></div>` : ''}
+                    ${riwayatHtml}
+                </div>`;
+
+            const modal = document.getElementById("modalDetailNota");
+            const content = document.getElementById("modalDetailNotaContent");
+            modal.classList.remove("hidden");
+            setTimeout(() => { modal.classList.remove("opacity-0"); content.classList.remove("scale-95"); content.classList.add("scale-100"); }, 10);
+        };
+
+        window.tutupModalDetailNota = function () {
+            const modal = document.getElementById("modalDetailNota");
+            const content = document.getElementById("modalDetailNotaContent");
+            modal.classList.add("opacity-0"); content.classList.remove("scale-100"); content.classList.add("scale-95");
+            setTimeout(() => { modal.classList.add("hidden"); }, 300);
+        };
+
+        // ==========================================
+        // MODAL EDIT NOTA
+        // ==========================================
+        window.bukaModalEditNota = function (encodedData) {
+            const item = JSON.parse(decodeURIComponent(encodedData));
+            const total = parseFloat(item.total_nota || item.total) || 0;
+
+            document.getElementById('editNotaId').value = item.id;
+            document.getElementById('editTanggal').value = item.tanggal ? item.tanggal.substring(0, 10) : '';
+            document.getElementById('editStatus').value = item.status || 'Lunas';
+            document.getElementById('editTotalNota').textContent = formatRupiah(total);
+
+            // Populate supplier dropdown
+            const editSelect = document.getElementById('editSupplier');
+            editSelect.innerHTML = '<option value="">-- Pilih Supplier --</option>';
+            allSupplierData.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.nama;
+                opt.textContent = s.nama;
+                editSelect.appendChild(opt);
+            });
+            editSelect.value = item.supplier || '';
+
+            // Jatuh tempo
+            const editJTContainer = document.getElementById('editJatuhTempoContainer');
+            if (item.status === 'Utang') {
+                editJTContainer.classList.remove('hidden');
+                document.getElementById('editJatuhTempo').value = (item.jatuh_tempo && item.jatuh_tempo !== '-') ? item.jatuh_tempo.substring(0, 10) : '';
+            } else {
+                editJTContainer.classList.add('hidden');
+            }
+
+            // Items list (read-only)
+            const editItemsList = document.getElementById('editItemsList');
+            if (item.items && Array.isArray(item.items) && item.items.length > 0) {
+                editItemsList.innerHTML = item.items.map(i => `<div class="flex justify-between text-xs"><span>${i.produk} (${i.unit} unit)</span><span>${formatRupiah((i.unit||0)*(i.harga_beli||0))}</span></div>`).join('');
+            } else {
+                editItemsList.innerHTML = '<p class="text-xs text-gray-400 italic">Tidak ada data produk</p>';
+            }
+
+            // Status change handler
+            document.getElementById('editStatus').onchange = function() {
+                if (this.value === 'Utang') editJTContainer.classList.remove('hidden');
+                else editJTContainer.classList.add('hidden');
+            };
+
+            const modal = document.getElementById("modalEditNota");
+            const content = document.getElementById("modalEditNotaContent");
+            modal.classList.remove("hidden");
+            setTimeout(() => { modal.classList.remove("opacity-0"); content.classList.remove("scale-95"); content.classList.add("scale-100"); }, 10);
+        };
+
+        window.tutupModalEditNota = function () {
+            const modal = document.getElementById("modalEditNota");
+            const content = document.getElementById("modalEditNotaContent");
+            modal.classList.add("opacity-0"); content.classList.remove("scale-100"); content.classList.add("scale-95");
+            setTimeout(() => { modal.classList.add("hidden"); }, 300);
+        };
+
+        document.getElementById('editNotaForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editNotaId').value;
+            const tanggal = document.getElementById('editTanggal').value;
+            const supplier = document.getElementById('editSupplier').value;
+            const status = document.getElementById('editStatus').value;
+            const jatuhTempo = status === 'Utang' ? document.getElementById('editJatuhTempo').value : '-';
+
+            if (!tanggal || !supplier) {
+                window.pushNotification("Tanggal dan Supplier wajib diisi!", "error");
+                return;
+            }
+
+            const btn = document.getElementById('btnSimpanEditNota');
+            const oldText = btn.innerHTML;
+            btn.innerHTML = 'Menyimpan...';
+            btn.disabled = true;
+
+            const payload = { tanggal, supplier, status, jatuh_tempo: jatuhTempo };
+            if (status === 'Lunas') {
+                // fetch current total to set terbayar
+                try {
+                    const res = await fetch(`https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/nota_supplier/${id}.json`);
+                    const current = await res.json();
+                    payload.terbayar = parseFloat(current.total_nota || current.total) || 0;
+                } catch(e) {}
+            }
+
+            try {
+                await fetch(`https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/nota_supplier/${id}.json`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                window.pushNotification("Nota berhasil diperbarui.");
+                window.tutupModalEditNota();
+                fetchData();
+            } catch (error) {
+                console.error("Gagal update nota:", error);
+                window.pushNotification("Gagal menyimpan perubahan.", "error");
+            } finally {
+                btn.innerHTML = oldText;
+                btn.disabled = false;
+            }
+        });
 
         // Set default date
         document.getElementById('inputTanggal').valueAsDate = new Date();

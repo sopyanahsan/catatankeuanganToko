@@ -95,15 +95,17 @@
           <table class="w-full text-left text-sm" style="min-width: 500px">
             <thead class="bg-gray-50 text-gray-400 text-[10px] uppercase tracking-wider sticky top-0 z-20">
               <tr>
-                <th class="p-3 pl-4">Tanggal / Status</th>
+                <th class="p-3 pl-4">Tanggal</th>
                 <th class="p-3">Nama Petani</th>
-                <th class="p-3 hidden md:table-cell">Keterangan</th>
-                <th class="p-3 text-right">Sisa Bon</th>
+                <th class="p-3 hidden md:table-cell">Daftar Produk & Unit</th>
+                <th class="p-3 text-right">Total Hutang</th>
+                <th class="p-3 text-center">Status</th>
+                <th class="p-3 text-center">Jatuh Tempo</th>
                 <th class="p-3 text-center w-20">Aksi</th>
               </tr>
             </thead>
             <tbody id="tabelPiutang" class="divide-y divide-gray-100">
-              <tr><td colspan="5" class="text-center py-6 text-sm font-bold text-gray-400">Memuat data...</td></tr>
+              <tr><td colspan="7" class="text-center py-6 text-sm font-bold text-gray-400">Memuat data...</td></tr>
             </tbody>
           </table>
         </div>
@@ -146,12 +148,16 @@
             <input type="number" id="inputDP" placeholder="0" min="0" value="0" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]" />
           </div>
           <div>
-            <label class="block text-xs font-bold text-gray-500 mb-1">Keterangan Barang</label>
-            <textarea id="inputKeterangan" placeholder="Contoh: Ambil pupuk urea 2 sak dan obat wereng" rows="3" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33] resize-none"></textarea>
+            <label class="block text-xs font-bold text-gray-500 mb-1">Tanggal Jatuh Tempo <span class="text-gray-400 font-normal">(Opsional)</span></label>
+            <input type="date" id="inputJatuhTempo" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]" />
           </div>
           <button type="submit" class="w-full bg-[#1e5c33] hover:bg-[#154626] text-white font-extrabold py-3.5 rounded-xl transition shadow-md uppercase tracking-wider text-sm flex items-center justify-center gap-2">
             <span>➕ Simpan Catatan Bon Baru</span>
           </button>
+          <div>
+            <label class="block text-xs font-bold text-gray-500 mb-1">Keterangan Barang</label>
+            <textarea id="inputKeterangan" placeholder="Contoh: Ambil pupuk urea 2 sak dan obat wereng" rows="3" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33] resize-none"></textarea>
+          </div>
         </form>
       </div>
     </div>
@@ -159,16 +165,22 @@
 
   <!-- MODAL BAYAR/CICIL -->
   <div id="modalBayarCicil" class="fixed inset-0 modal-bg z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
-    <div class="bg-white w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300" id="modalBayarCicilContent">
-      <div class="p-5 flex justify-between items-center text-white bg-[#1a2f26]">
+    <div class="bg-white w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 max-h-[85vh] flex flex-col" id="modalBayarCicilContent">
+      <div class="p-5 flex justify-between items-center text-white bg-[#1a2f26] shrink-0">
         <h3 class="font-extrabold text-lg">💸 Bayar / Cicil</h3>
         <button onclick="tutupModalBayarCicil()" class="text-white/70 hover:text-white text-2xl font-bold transition">&times;</button>
       </div>
-      <div class="p-6 space-y-4">
+      <div class="p-6 space-y-4 overflow-y-auto">
         <input type="hidden" id="modalPiutangId" />
+        <input type="hidden" id="modalTotalNilai" />
+        <input type="hidden" id="modalRiwayatCicilan" />
         <div>
           <p class="text-xs text-gray-500 font-bold mb-1">Sisa Hutang</p>
           <p id="modalSisaHutang" class="font-extrabold text-[#1a2f26] text-2xl">Rp 0</p>
+        </div>
+        <div id="riwayatCicilanContainer" class="hidden">
+          <p class="text-xs text-gray-500 font-bold mb-2">📋 Riwayat Pembayaran</p>
+          <div id="riwayatCicilanList" class="space-y-1 max-h-32 overflow-y-auto"></div>
         </div>
         <div>
           <label class="block text-xs font-bold text-gray-500 mb-1">Jumlah Uang yang Dibayar (Rp)</label>
@@ -377,7 +389,7 @@
               datalist.appendChild(option);
               existingProducts[cleanName.toLowerCase()] = {
                 id: id,
-                harga_jual: parseFloat(item.harga_jual) || 0,
+              harga_jual: parseFloat(item.hargaJual || item.harga_jual || item.harga || 0),
                 ...item
               };
             }
@@ -484,46 +496,131 @@
       const data = filtered || allPiutangData.filter(p => p.status === "Belum Lunas");
       
       if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-sm font-bold text-gray-400">Tidak ada data piutang yang belum lunas.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-10 text-center text-slate-500 font-bold">Belum ada catatan bon piutang.</td></tr>';
         return;
       }
 
       tbody.innerHTML = '';
       data.forEach(item => {
-        const daysDiff = getDaysDiff(item.tanggal);
-        const isOverdue = daysDiff > 90;
-        
+        const totalNilai = item.total_nilai || 0;
+        const sisaHutang = item.sisa_hutang || 0;
+        const dibayar = totalNilai - sisaHutang;
+        const persenBayar = totalNilai > 0 ? Math.min(100, Math.round((dibayar / totalNilai) * 100)) : 0;
+        const isLunas = item.status === 'Lunas' || sisaHutang <= 0;
+
+        const riwayatStr = encodeURIComponent(JSON.stringify(item.riwayat_cicilan || []));
+
+        // Items HTML
+        let itemsHtml = '';
+        if (item.items && Array.isArray(item.items) && item.items.length > 0) {
+          itemsHtml = item.items.map(i => `&bull; ${i.nama} <span class="text-gray-400">(${i.qty} Unit)</span>`).join('<br>');
+        } else if (item.keterangan) {
+          itemsHtml = `&bull; ${item.keterangan.substring(0, 50)}${item.keterangan.length > 50 ? '...' : ''}`;
+        }
+
+        // Riwayat HTML inside status column (like supplier)
+        let riwayatHTML = '';
+        if (item.riwayat_cicilan && Array.isArray(item.riwayat_cicilan) && item.riwayat_cicilan.length > 0) {
+          const listRiwayat = item.riwayat_cicilan.map((r, rIndex) => `
+            <div class="flex justify-between items-center w-full text-[9px] text-gray-500 border-b border-gray-100 last:border-0 py-1 group">
+              <span class="text-left">${formatDate(r.tanggal)}</span>
+              <div class="flex items-center gap-1">
+                <span class="font-bold text-right text-green-600">+${formatRupiah(r.nominal)}</span>
+                <button onclick="hapusPembayaranById('${item.id}', ${rIndex}, '${riwayatStr}')" class="text-red-400 hover:text-red-600 px-1 opacity-0 group-hover:opacity-100 transition-opacity" title="Hapus Pembayaran">❌</button>
+              </div>
+            </div>
+          `).join('');
+          riwayatHTML = `<div class="w-full mt-2 p-2 bg-gray-50 rounded-lg border border-gray-200 max-h-24 overflow-y-auto shadow-inner" style="-ms-overflow-style: none; scrollbar-width: none;">${listRiwayat}</div>`;
+        }
+
+        // Status column
+        let statusColumn = '';
+        if (isLunas) {
+          statusColumn = `<div class="flex flex-col items-center gap-1.5 w-full max-w-[140px] mx-auto">
+            <span class="bg-green-100 text-green-700 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Lunas</span>
+            ${riwayatHTML}
+          </div>`;
+        } else {
+          const jtText = item.jatuh_tempo ? formatDate(item.jatuh_tempo) : '-';
+          const jtDate = item.jatuh_tempo ? new Date(item.jatuh_tempo) : null;
+          const today = new Date();
+          const sisaHari = jtDate ? Math.ceil((jtDate - today) / (1000*60*60*24)) : null;
+          let jtLabel = `Jatuh Tempo: ${jtText}`;
+          if (sisaHari !== null && sisaHari < 0) jtLabel = `⚠️ Lewat ${Math.abs(sisaHari)} hari`;
+          else if (sisaHari !== null && sisaHari <= 7) jtLabel = `⏰ Sisa ${sisaHari} hari`;
+
+          statusColumn = `<div class="flex flex-col items-center gap-1.5 w-full max-w-[140px] mx-auto">
+            <span class="bg-red-100 text-red-700 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Utang</span>
+            <div class="w-full bg-gray-200 rounded-full h-1.5">
+              <div class="bg-blue-500 h-1.5 rounded-full" style="width: ${persenBayar}%"></div>
+            </div>
+            <span class="text-[9px] text-gray-500 font-bold whitespace-nowrap">Sisa: ${formatRupiah(sisaHutang)}</span>
+            <span class="text-[9px] text-gray-400 font-bold whitespace-nowrap">${jtLabel}</span>
+            ${riwayatHTML}
+          </div>`;
+        }
+
+        // Jatuh Tempo column
+        let jatuhTempoText = '-';
+        let jatuhTempoClass = 'text-gray-400';
+        if (item.jatuh_tempo) {
+          const jtDate = new Date(item.jatuh_tempo);
+          const today = new Date();
+          const sisaHari = Math.ceil((jtDate - today) / (1000*60*60*24));
+          jatuhTempoText = formatDate(item.jatuh_tempo);
+          if (sisaHari < 0 && !isLunas) {
+            jatuhTempoText += ` (⚠️ ${Math.abs(sisaHari)} hr lewat)`;
+            jatuhTempoClass = 'text-red-600 font-extrabold';
+          } else if (sisaHari <= 7 && !isLunas) {
+            jatuhTempoText += ` (⏰ ${sisaHari} hr lagi)`;
+            jatuhTempoClass = 'text-orange-500 font-bold';
+          } else {
+            jatuhTempoClass = 'text-gray-600 font-bold';
+          }
+        }
+
+        // Action buttons (1 row horizontal)
+        let actionButtons = '';
+        if (!isLunas) {
+          actionButtons += `<button onclick="bukaModalBayarCicil('${item.id}', ${sisaHutang}, ${totalNilai}, '${riwayatStr}')" class="text-[10px] bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold px-2 py-1.5 rounded-lg transition-colors text-center tracking-wide">💸 Bayar</button>`;
+          actionButtons += `<button onclick="tandaiLunas('${item.id}')" class="text-[10px] bg-orange-100 hover:bg-orange-200 text-orange-800 font-bold px-2 py-1.5 rounded-lg transition-colors text-center tracking-wide">✏️ Lunas</button>`;
+        }
+        actionButtons += `<button onclick="hapusBon('${item.id}')" class="text-[10px] bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-700 font-bold px-2 py-1.5 rounded-lg transition-colors text-center tracking-wide">🗑️</button>`;
+
         const tr = document.createElement('tr');
-        tr.className = "bg-white transition hover:bg-gray-50";
-        
-        const statusBadge = item.status === "Lunas" 
-          ? '<span class="bg-green-100 text-green-700 px-2 py-1 rounded-md text-[10px] font-bold uppercase">✓ Lunas</span>'
-          : '<span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-md text-[10px] font-bold uppercase">⏳ Belum Lunas</span>';
-
-        const overdueBadge = isOverdue 
-          ? '<span class="bg-red-100 text-red-700 px-2 py-1 rounded-md text-[10px] font-bold uppercase pulse-badge">⚠️ Jatuh Tempo (>3 Bln)</span>'
-          : '';
-
         tr.innerHTML = `
-          <td class="p-3 pl-4">
-            <div class="text-sm font-bold text-[#1a2f26]">${formatDate(item.tanggal)}</div>
-            <div class="text-[10px] text-gray-500 mt-1">${statusBadge}</div>
-          </td>
-          <td class="p-3 text-sm font-bold text-[#1a2f26]">${item.nama_petani || '-'}</td>
-          <td class="p-3 hidden md:table-cell text-sm text-gray-600">${item.keterangan ? item.keterangan.substring(0, 40) + (item.keterangan.length > 40 ? '...' : '') : '-'}</td>
-          <td class="p-3 text-right">
-            <div class="text-sm font-extrabold text-[#1a2f26]">${formatRupiah(item.sisa_hutang || 0)}</div>
-            ${overdueBadge ? '<div class="mt-1">' + overdueBadge + '</div>' : ''}
-          </td>
-          <td class="p-3 text-center">
-            <button onclick="bukaModalBayarCicil('${item.id}', ${item.sisa_hutang || 0})" class="bg-[#1e5c33] hover:bg-[#154626] text-white font-bold px-3 py-2 rounded-lg text-xs transition flex items-center justify-center gap-1 mx-auto">
-              💸 Bayar
-            </button>
-          </td>
+          <td class="p-3 pl-4 align-top"><div class="text-xs font-bold text-gray-500">${formatDate(item.tanggal)}</div></td>
+          <td class="p-3 align-top"><div class="text-sm font-extrabold text-[#1a2f26]">${item.nama_petani || '-'}</div></td>
+          <td class="p-3 align-top hidden md:table-cell"><div class="text-[11px] font-bold text-gray-700 leading-relaxed">${itemsHtml}</div></td>
+          <td class="p-3 text-right align-top"><div class="text-sm font-extrabold text-[#1a2f26]">${formatRupiah(totalNilai)}</div></td>
+          <td class="p-3 text-center align-top">${statusColumn}</td>
+          <td class="p-3 text-center align-top"><div class="text-[11px] ${jatuhTempoClass} whitespace-nowrap">${jatuhTempoText}</div></td>
+          <td class="p-3 text-center align-top"><div class="flex flex-row items-center justify-center gap-1 flex-nowrap">${actionButtons}</div></td>
         `;
         tbody.appendChild(tr);
       });
     }
+
+    window.tandaiLunas = async function(id) {
+      const confirm = await Swal.fire({ title: 'Tandai Lunas?', icon: 'question', showCancelButton: true, confirmButtonText: 'Ya' });
+      if (!confirm.isConfirmed) return;
+      try {
+        await update(ref(db, `piutang_customer/${id}`), { sisa_hutang: 0, status: 'Lunas' });
+        window.pushNotification("Piutang ditandai lunas", "sukses");
+        loadPiutangData();
+      } catch (e) { window.pushNotification("Gagal: " + e.message, "error"); }
+    };
+
+    window.hapusBon = async function(id) {
+      const confirm = await Swal.fire({ title: 'Hapus Catatan?', text: 'Data tidak dapat dikembalikan.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Hapus' });
+      if (!confirm.isConfirmed) return;
+      try {
+        const { ref, remove } = await import("https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js");
+        await remove(ref(db, `piutang_customer/${id}`));
+        window.pushNotification("Catatan bon dihapus", "sukses");
+        loadPiutangData();
+      } catch (e) { window.pushNotification("Gagal: " + e.message, "error"); }
+    };
 
     function updateMetrics() {
       const belumLunasData = allPiutangData.filter(p => p.status === "Belum Lunas");
@@ -548,7 +645,6 @@
       
       const namaPetani = document.getElementById('inputNamaPetani').value.trim();
       const tanggal = document.getElementById('inputTanggalTransaksi').value;
-      // Use the total from the cart, not the input field directly if it's not manually set
       const totalNilai = parseFloat(document.getElementById('inputTotalNilai').value) || 0; 
       const dp = parseFloat(document.getElementById('inputDP').value) || 0;
       const keterangan = document.getElementById('inputKeterangan').value.trim();
@@ -566,6 +662,7 @@
       const sisaHutang = totalNilai - dp;
       const status = sisaHutang <= 0 ? "Lunas" : "Belum Lunas";
 
+      const jatuhTempo = document.getElementById('inputJatuhTempo').value;
       const bonData = {
         nama_petani: namaPetani,
         tanggal: new Date(tanggal).toISOString(),
@@ -573,8 +670,13 @@
         dp: dp,
         sisa_hutang: Math.max(0, sisaHutang),
         status: status,
-        keterangan: keterangan
+        keterangan: keterangan,
+        items: keranjang.map(k => ({ nama: k.nama, qty: k.qty, harga_satuan: k.harga_satuan })),
+        riwayat_cicilan: dp > 0 ? [{ tanggal: new Date().toISOString(), nominal: dp }] : []
       };
+      if (jatuhTempo) {
+        bonData.jatuh_tempo = new Date(jatuhTempo).toISOString();
+      }
 
       try {
         const newRef = push(ref(db, 'piutang_customer'));
@@ -587,7 +689,11 @@
         window.pushNotification("Bon petani berhasil disimpan!", "sukses");
         document.getElementById('formBonBaru').reset();
         document.getElementById('inputTanggalTransaksi').valueAsDate = new Date();
+        keranjang = [];
+        renderKeranjang();
+        updateTotalNilai();
         await loadPiutangData();
+        tutupModalFormBon();
       } catch (error) {
         console.error("Gagal simpan bon:", error);
         window.pushNotification("Gagal menyimpan bon: " + error.message, "error");
@@ -617,6 +723,9 @@
     window.bukaModalFormBon = function() {
       document.getElementById('formBonBaru').reset();
       document.getElementById('inputTanggalTransaksi').valueAsDate = new Date();
+      keranjang = [];
+      renderKeranjang();
+      updateTotalNilai();
       const modal = document.getElementById("modalFormBon");
       const content = document.getElementById("modalFormBonContent");
       modal.classList.remove("hidden");
@@ -634,10 +743,38 @@
       setTimeout(() => modal.classList.add("hidden"), 300);
     };
 
-    window.bukaModalBayarCicil = function(id, sisa) {
+    window.bukaModalBayarCicil = function(id, sisa, totalNilai, riwayatStr) {
       document.getElementById('modalPiutangId').value = id;
+      document.getElementById('modalTotalNilai').value = totalNilai || 0;
+      document.getElementById('modalRiwayatCicilan').value = riwayatStr || '';
       document.getElementById('modalSisaHutang').innerText = formatRupiah(sisa);
       document.getElementById('modalJumlahBayar').value = '';
+
+      // Show payment history
+      const riwayatContainer = document.getElementById('riwayatCicilanContainer');
+      const riwayatList = document.getElementById('riwayatCicilanList');
+      riwayatList.innerHTML = '';
+      
+      try {
+        const riwayat = JSON.parse(decodeURIComponent(riwayatStr || '[]'));
+        if (riwayat && riwayat.length > 0) {
+          riwayatContainer.classList.remove('hidden');
+          riwayat.forEach((r, idx) => {
+            const div = document.createElement('div');
+            div.className = 'flex justify-between items-center bg-green-50 px-3 py-1.5 rounded-lg text-[11px]';
+            div.innerHTML = `
+              <span class="text-gray-600">${formatDate(r.tanggal)}: <b class="text-green-700">${formatRupiah(r.nominal)}</b></span>
+              <button type="button" onclick="hapusPembayaran(${idx})" class="text-red-400 hover:text-red-600 text-xs font-bold">Hapus</button>
+            `;
+            riwayatList.appendChild(div);
+          });
+        } else {
+          riwayatContainer.classList.add('hidden');
+        }
+      } catch(e) {
+        riwayatContainer.classList.add('hidden');
+      }
+
       const modal = document.getElementById('modalBayarCicil');
       const content = document.getElementById('modalBayarCicilContent');
       modal.classList.remove('hidden');
@@ -665,36 +802,99 @@
       }
 
       const item = allPiutangData.find(p => p.id === id);
-      if (!item) {
-        window.pushNotification("Data tidak ditemukan!", "error");
-        return;
-      }
+      if (!item) return;
 
-      const sisaBaru = Math.max(0, (item.sisa_hutang || 0) - jumlahBayar);
-      const statusBaru = sisaBaru <= 0 ? "Lunas" : "Belum Lunas";
-
-      const btn = document.getElementById('btnKonfirmasiBayar');
-      const oldText = btn.innerText;
-      btn.innerText = 'Menyimpan...';
-      btn.disabled = true;
+      const riwayat = JSON.parse(decodeURIComponent(document.getElementById('modalRiwayatCicilan').value || '[]'));
+      riwayat.push({ tanggal: new Date().toISOString(), nominal: jumlahBayar });
+      
+      const totalBayar = riwayat.reduce((sum, r) => sum + r.nominal, 0);
+      const sisaBaru = Math.max(0, (item.total_nilai || 0) - totalBayar);
 
       try {
         await update(ref(db, `piutang_customer/${id}`), {
           sisa_hutang: sisaBaru,
-          status: statusBaru
+          status: sisaBaru <= 0 ? "Lunas" : "Belum Lunas",
+          riwayat_cicilan: riwayat
         });
-
         await updateBrankas(jumlahBayar);
-
         window.pushNotification("Pembayaran berhasil dicatat!", "sukses");
         window.tutupModalBayarCicil();
         await loadPiutangData();
       } catch (error) {
-        console.error("Gagal simpan pembayaran:", error);
-        window.pushNotification("Gagal menyimpan pembayaran: " + error.message, "error");
-      } finally {
-        btn.innerText = oldText;
-        btn.disabled = false;
+        window.pushNotification("Gagal simpan: " + error.message, "error");
+      }
+    };
+
+    window.hapusPembayaranById = async function(itemId, rIndex, riwayatStr) {
+      const item = allPiutangData.find(p => p.id === itemId);
+      if (!item) return;
+      let riwayat = [];
+      try { riwayat = JSON.parse(decodeURIComponent(riwayatStr)); } catch(e) {}
+      const nominal = riwayat[rIndex]?.nominal || 0;
+
+      const confirm = await Swal.fire({
+        title: 'Batalkan Pembayaran?',
+        text: `Pembayaran sebesar ${formatRupiah(nominal)} akan dibatalkan.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#1e5c33',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, batalkan!'
+      });
+      if (!confirm.isConfirmed) return;
+
+      riwayat.splice(rIndex, 1);
+      const totalBayar = riwayat.reduce((sum, r) => sum + r.nominal, 0);
+      const sisaBaru = Math.max(0, (item.total_nilai || 0) - totalBayar);
+
+      try {
+        await update(ref(db, `piutang_customer/${itemId}`), {
+          sisa_hutang: sisaBaru,
+          status: sisaBaru <= 0 ? "Lunas" : "Belum Lunas",
+          riwayat_cicilan: riwayat
+        });
+        await updateBrankas(-nominal);
+        window.pushNotification("Pembayaran dibatalkan", "sukses");
+        loadPiutangData();
+      } catch (error) {
+        window.pushNotification("Gagal: " + error.message, "error");
+      }
+    };
+
+    window.hapusPembayaran = async function(index) {
+      const id = document.getElementById('modalPiutangId').value;
+      const riwayat = JSON.parse(decodeURIComponent(document.getElementById('modalRiwayatCicilan').value || '[]'));
+      const item = allPiutangData.find(p => p.id === id);
+      
+      const confirm = await Swal.fire({
+        title: 'Hapus Pembayaran?',
+        text: "Data pembayaran ini akan dihapus permanen.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'Ya, Hapus!'
+      });
+
+      if (!confirm.isConfirmed) return;
+
+      const pembayaranDihapus = riwayat[index].nominal;
+      riwayat.splice(index, 1);
+      
+      const totalBayar = riwayat.reduce((sum, r) => sum + r.nominal, 0);
+      const sisaBaru = Math.max(0, (item.total_nilai || 0) - totalBayar);
+
+      try {
+        await update(ref(db, `piutang_customer/${id}`), {
+          sisa_hutang: sisaBaru,
+          status: sisaBaru <= 0 ? "Lunas" : "Belum Lunas",
+          riwayat_cicilan: riwayat
+        });
+        await updateBrankas(-pembayaranDihapus);
+        window.pushNotification("Pembayaran berhasil dihapus", "sukses");
+        window.tutupModalBayarCicil();
+        await loadPiutangData();
+      } catch (error) {
+        window.pushNotification("Gagal hapus: " + error.message, "error");
       }
     };
   </script>
