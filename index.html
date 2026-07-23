@@ -2237,18 +2237,22 @@
         document.getElementById("list-input-tabel").innerHTML = "";
         
         // Tambah Dana Talang ke Aset
-        const talangRes = await fetch(TALANG_URL);
-        const talangData = await talangRes.json();
         let totalAktif = 0;
-        if (talangData && typeof talangData === "object") {
-          Object.values(talangData).forEach(val => {
-            if (val.status === "Belum Selesai") {
-              const nom = Number(val.nominal) || 0;
-              let paid = 0;
-              if (val.pembayaran) Object.values(val.pembayaran).forEach(p => paid += (Number(p.nominal)||0));
-              totalAktif += Math.max(nom - paid, 0);
-            }
-          });
+        try {
+          const talangRes = await fetch(TALANG_URL);
+          const talangData = await talangRes.json();
+          if (talangData && typeof talangData === "object") {
+            Object.values(talangData).forEach(val => {
+              if (val.status === "Belum Selesai") {
+                const nom = Number(val.nominal) || 0;
+                let paid = 0;
+                if (val.pembayaran) Object.values(val.pembayaran).forEach(p => paid += (Number(p.nominal)||0));
+                totalAktif += Math.max(nom - paid, 0);
+              }
+            });
+          }
+        } catch(e) {
+          console.error("Gagal load dana talang:", e);
         }
         
         if (sortedKeysAsc.length > 0) {
