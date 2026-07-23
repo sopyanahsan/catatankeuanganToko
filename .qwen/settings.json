@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(type *)",
+      "Bash(findstr *)",
+      "Bash(get-content *)",
+      "Bash(select-object *)",
+      "Bash(foreach-object *)",
+      "Bash(write-output *)"
+    ]
+  },
+  "$version": 4
+}

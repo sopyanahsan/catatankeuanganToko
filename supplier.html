@@ -1,0 +1,1570 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nota Supplier - Catatan Keuangan</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <style>
+        body { background-color: #f2f7f4; font-family: "Plus Jakarta Sans", sans-serif; color: #1a2f26; }
+        .modal-bg { background-color: rgba(14, 31, 23, 0.6); backdrop-filter: blur(4px); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #c3decb; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9ebd9f; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 8px 32px rgba(28, 64, 46, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+    </style>
+</head>
+<body class="p-3 md:p-6 pb-10">
+    <div id="toastContainer" class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-3 pointer-events-none w-full max-w-sm px-4"></div>
+
+    <div id="mainApp" class="hidden opacity-0 transition-opacity duration-500">
+        <!-- Navbar Integrated Bio Style -->
+        <nav class="max-w-6xl mx-auto pt-6 pb-8 px-2 flex justify-between items-center relative z-50">
+            <div class="flex items-center gap-2">
+                <svg class="w-8 h-8 text-[#1e5c33]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z" />
+                </svg>
+                <span class="font-bold text-xl text-[#1a2f26] tracking-tight">CatatanKeuangan</span>
+            </div>
+
+            <div class="flex items-center bg-[#f0f2ed]/80 backdrop-blur-md rounded-full px-2 py-1.5 border border-white/40 shadow-sm overflow-x-auto whitespace-nowrap">
+                <a href="index.html" class="px-5 py-2 text-xs font-bold text-gray-500 hover:text-[#1e5c33] transition uppercase tracking-widest">DASHBOARD</a>
+                <a href="produk.html" class="px-5 py-2 text-xs font-bold text-gray-500 hover:text-[#1e5c33] transition uppercase tracking-widest">PRODUK</a>
+                <a href="supplier.html" class="px-5 py-2 text-xs font-bold text-gray-700 hover:text-[#1e5c33] transition uppercase tracking-widest">NOTA SUPPLIER</a>
+      <a href="piutang.html" class="px-5 py-2 text-xs font-bold text-gray-500 hover:text-[#1e5c33] transition uppercase tracking-widest">CATATAN BON</a>
+      <a href="opname.html" class="px-5 py-2 text-xs font-bold text-gray-500 hover:text-[#1e5c33] transition uppercase tracking-widest">OPNAME</a>
+                <button onclick="bukaModalProfil()" class="ml-2 bg-[#1a2f26] hover:bg-[#12231b] text-white text-xs font-bold px-5 py-2.5 rounded-full transition uppercase tracking-widest shrink-0">
+                    AKUN SAYA
+                </button>
+            </div>
+        </nav>
+
+        <div class="fixed bottom-4 right-4 z-50 pointer-events-none">
+            <div id="statusKoneksi" class="px-4 py-2 flex items-center gap-1.5 text-[10px] font-bold text-gray-400 bg-white/80 backdrop-blur-md border border-gray-200 shadow-sm rounded-full uppercase tracking-widest pointer-events-auto">
+                <span class="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse"></span> CON...
+            </div>
+        </div>
+
+    <main class="max-w-7xl mx-auto space-y-6">
+        
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-[#1a2f26]">Riwayat Nota Supplier</h1>
+                <p class="text-sm text-gray-500 mt-1">Catat dan pantau transaksi pembelian ke supplier dengan sistem keranjang multi-produk.</p>
+            </div>
+        </div>
+
+        <!-- Metrics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="glass-card p-6 rounded-[1.5rem] flex flex-col relative overflow-hidden">
+                <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-gray-400"></div>
+                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Total Pembelian (Seluruhnya)</span>
+                <span class="text-2xl font-extrabold text-[#1a2f26] mt-2" id="metricTotalPembelian">Rp 0</span>
+            </div>
+            <div class="glass-card p-6 rounded-[1.5rem] flex flex-col relative overflow-hidden">
+                <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-[#4caf50]"></div>
+                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Total Terbayar (Lunas)</span>
+                <span class="text-2xl font-extrabold text-green-600 mt-2" id="metricTotalLunas">Rp 0</span>
+            </div>
+            <div class="glass-card p-6 rounded-[1.5rem] flex flex-col relative overflow-hidden">
+                <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-red-500"></div>
+                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Sisa Utang Supplier</span>
+                <span class="text-2xl font-extrabold text-red-600 mt-2" id="metricSisaUtang">Rp 0</span>
+            </div>
+        </div>
+
+        <!-- ========== BUTTON TAMBAH NOTA BARU & SUPPLIER ========== -->
+        <div class="flex justify-end gap-3 mb-4">
+            <button onclick="window.bukaModalDirektoriSupplier()" class="bg-[#e8f3ec] hover:bg-[#cbe6d6] text-[#1e5c33] font-extrabold py-3 px-6 rounded-xl transition shadow-md uppercase tracking-wider text-sm flex items-center justify-center gap-2 border border-[#1e5c33]/20">
+                <span>📒 Supplier</span>
+            </button>
+            <button onclick="window.bukaModalTambahNota()" class="bg-[#1e5c33] hover:bg-[#154626] text-white font-extrabold py-3 px-6 rounded-xl transition shadow-md uppercase tracking-wider text-sm flex items-center justify-center gap-2">
+                <span>➕ Tambah Nota Baru</span>
+            </button>
+        </div>
+
+        <!-- ========== TABEL RIWAYAT NOTA (Full Width) ========== -->
+        <div>
+            <div class="glass-card rounded-[2rem] overflow-hidden">
+                <div class="overflow-x-auto p-2">
+                    <table class="w-full text-left text-sm" style="min-width: 700px">
+                        <thead class="bg-gray-50 text-gray-400 text-[10px] uppercase tracking-wider">
+                            <tr>
+                                <th scope="col" class="p-3 pl-4 font-bold">Tanggal</th>
+                                <th scope="col" class="p-3 font-bold">Nama Supplier</th>
+                                <th scope="col" class="p-3 font-bold">Daftar Produk & Unit</th>
+                                <th scope="col" class="p-3 text-right font-bold">Total Nota</th>
+                                <th scope="col" class="p-3 text-center font-bold">Status</th>
+                                <th scope="col" class="p-3 text-center font-bold w-24">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="divide-y divide-gray-100">
+                            <tr>
+                                <td colspan="6" class="p-4 text-center text-gray-400 animate-pulse font-bold">Memuat data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+    </div> <!-- End of mainApp -->
+
+    <!-- MODAL TAMBAH NOTA BARU -->
+    <div id="modalTambahNota" class="fixed inset-0 modal-bg z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white w-full max-w-2xl rounded-[2rem] shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300" id="modalTambahNotaContent">
+            <div class="p-5 flex justify-between items-center text-white bg-[#1a2f26]">
+                <h3 class="font-extrabold text-lg">Tambah Nota Baru</h3>
+                <button onclick="window.tutupModalTambahNota()" class="text-white/70 hover:text-white text-2xl font-bold transition">&times;</button>
+            </div>
+            <div class="p-6 overflow-y-auto" style="max-height: 80vh">
+                <form id="notaForm" class="space-y-4">
+                    <!-- TAHAP 1: INPUT BARANG KE KERANJANG -->
+                    <div class="bg-gray-50 p-4 rounded-[1.5rem] border border-gray-100">
+                        <h3 class="text-sm font-extrabold text-[#1a2f26] mb-3 flex items-center gap-2">
+                            <span>🛒</span> Keranjang Produk
+                        </h3>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase">Nama Produk</label>
+                                <input type="text" id="inputProduk" list="produkSuggestions" placeholder="Ketik nama produk..." autocomplete="off" class="w-full bg-white border border-gray-200 p-2.5 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                                <datalist id="produkSuggestions"></datalist>
+                            </div>
+                            <div class="grid grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase">Harga Beli Satuan</label>
+                                    <input type="number" id="inputHarga" min="0" placeholder="Rp" class="w-full bg-white border border-gray-200 p-2.5 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase">Jumlah/Unit</label>
+                                    <input type="number" id="inputQty" min="1" step="0.01" value="1" class="w-full bg-white border border-gray-200 p-2.5 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between items-center mb-1">
+                                        <label class="block text-[10px] font-bold text-gray-500 uppercase">Unit</label>
+                                        <button type="button" onclick="window.kelolaUnit()" class="text-[9px] text-[#1e5c33] hover:underline font-extrabold">Kelola</button>
+                                    </div>
+                                    <input type="text" id="inputUnit" list="unitSuggestions" placeholder="pcs" class="w-full bg-white border border-gray-200 p-2.5 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                                    <datalist id="unitSuggestions"></datalist>
+                                </div>
+                            </div>
+                            <button type="button" id="btnTambahKeranjang" class="w-full bg-[#e8f3ec] hover:bg-[#cbe6d6] text-[#1e5c33] font-bold py-2.5 rounded-xl transition text-sm flex items-center justify-center space-x-2">
+                                <span>➕ Tambah ke Daftar</span>
+                            </button>
+                        </div>
+
+                        <!-- Mini Table Draft -->
+                        <div class="mt-4 border border-gray-200 rounded-xl overflow-hidden bg-white">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-gray-50 text-gray-500 uppercase text-[10px]">
+                                    <tr>
+                                        <th class="p-2 pl-3 font-bold">Produk</th>
+                                        <th class="p-2 font-bold text-right">Subtotal</th>
+                                        <th class="p-2 font-bold text-center w-8">#</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="keranjangBody" class="divide-y divide-gray-100">
+                                    <tr><td colspan="3" class="p-3 text-center text-gray-400 italic font-bold">Keranjang kosong</td></tr>
+                                </tbody>
+                                <tfoot class="bg-gray-50 border-t border-gray-200">
+                                    <tr>
+                                        <td class="p-2 pl-3 font-bold text-gray-600 text-[10px] uppercase">Total Sementara:</td>
+                                        <td class="p-2 font-extrabold text-[#1a2f26] text-right" id="totalSementara">Rp 0</td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TAHAP 2: FINALISASI NOTA & STATUS -->
+                    <div class="space-y-3 pt-2">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Tanggal Nota</label>
+                            <input type="date" id="inputTanggal" required class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Nama Supplier</label>
+                            <select id="inputSupplier" required class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                                <option value="">-- Pilih Supplier --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Status Pembayaran</label>
+                            <select id="inputStatus" required class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                                <option value="Lunas">Lunas</option>
+                                <option value="Utang">Utang</option>
+                            </select>
+                        </div>
+                        <div id="jatuhTempoContainer" class="hidden">
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Jatuh Tempo</label>
+                            <input type="date" id="inputJatuhTempo" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                        </div>
+                        <button type="submit" id="btnSimpanNota" disabled class="w-full bg-[#1e5c33] hover:bg-[#154626] text-white font-extrabold py-3.5 rounded-xl transition shadow-md uppercase tracking-wider text-sm mt-4 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span>💾 Konfirmasi & Simpan Nota</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CICILAN -->
+    <div id="modalCicilan" class="fixed inset-0 modal-bg z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300" id="modalCicilanContent">
+            <div class="p-5 flex justify-between items-center text-white bg-[#1a2f26]">
+                <h3 class="font-extrabold text-lg">Bayar Cicilan</h3>
+                <button onclick="tutupModalCicilan()" class="text-white/70 hover:text-white text-2xl font-bold transition">&times;</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <input type="hidden" id="cicilanId">
+                <input type="hidden" id="cicilanTotal">
+                <input type="hidden" id="cicilanTerbayarSaatIni">
+                <input type="hidden" id="cicilanRiwayat">
+                
+                <div>
+                    <p class="text-xs text-gray-500 font-bold mb-1">Sisa Utang</p>
+                    <p id="cicilanSisaDisplay" class="font-extrabold text-[#1a2f26] text-xl">Rp 0</p>
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Jumlah Bayar</label>
+                    <input type="number" id="inputJumlahCicilan" placeholder="Rp" class="w-full bg-white border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Tanggal Pembayaran</label>
+                    <input type="date" id="inputTanggalCicilan" class="w-full bg-white border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                </div>
+                
+                <button id="btnSimpanCicilan" onclick="simpanCicilan()" class="w-full bg-[#1e5c33] hover:bg-[#154626] text-white font-bold py-3 rounded-xl transition shadow-sm text-sm flex items-center justify-center gap-2">
+                    💾 Konfirmasi Pembayaran
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PROFIL -->
+    <div id="modalProfil" class="fixed inset-0 modal-bg z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300" id="modalProfilContent">
+            <div class="p-5 flex justify-between items-center text-white bg-[#1a2f26]">
+                <h3 class="font-extrabold text-lg">Profil Akun</h3>
+                <button onclick="tutupModalProfil()" class="text-white/70 hover:text-white text-2xl font-bold transition">&times;</button>
+            </div>
+            <div class="p-6 space-y-5 text-center">
+                <div class="w-20 h-20 bg-green-100 text-green-700 rounded-full flex items-center justify-center font-bold text-4xl mx-auto mb-2 shadow-inner">👤</div>
+                <div>
+                    <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Email Saat Ini</p>
+                    <p id="profilEmailDisplay" class="font-extrabold text-[#1a2f26] text-lg">user@email.com</p>
+                    <p id="profilProviderDisplay" class="text-xs text-gray-500 mt-1 font-bold bg-gray-100 inline-block px-2 py-0.5 rounded-md"></p>
+                </div>
+                <div class="border-t border-gray-100 pt-5 text-left space-y-3">
+                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 mb-3" id="gantiPasswordContainer">
+                        <p class="text-xs text-gray-500 font-bold mb-2">Ganti Password Langsung</p>
+                        <input type="password" id="profilNewPassword" placeholder="Masukkan password baru" class="w-full bg-white border border-gray-200 p-2.5 rounded-xl outline-none text-sm font-bold text-gray-700 mb-2 focus:border-green-400">
+                        <button id="btnSimpanPassword" onclick="handleUpdatePasswordUI()" class="w-full bg-[#1e5c33] hover:bg-[#154626] text-white font-bold py-2.5 rounded-xl transition shadow-sm text-sm">Simpan Password Baru</button>
+                    </div>
+                    <p class="text-xs text-gray-500 font-bold mt-4">Menu Akun</p>
+                    <button onclick="handleLogout()" class="w-full flex items-center justify-between p-3 rounded-xl bg-red-50 hover:bg-red-100 transition border border-red-100 group">
+                        <span class="text-sm font-bold text-red-600 group-hover:text-red-700">Keluar (Logout)</span>
+                        <svg class="w-4 h-4 text-red-400 group-hover:text-red-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DETAIL NOTA -->
+    <div id="modalDetailNota" class="fixed inset-0 modal-bg z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300" id="modalDetailNotaContent">
+            <div class="p-5 flex justify-between items-center text-white bg-[#1a2f26]">
+                <h3 class="font-extrabold text-lg flex items-center gap-2">📋 Detail Nota</h3>
+                <button onclick="window.tutupModalDetailNota()" class="text-white/70 hover:text-white text-2xl font-bold transition">&times;</button>
+            </div>
+            <div class="p-6 overflow-y-auto" style="max-height: 75vh" id="detailNotaBody">
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDIT NOTA -->
+    <div id="modalEditNota" class="fixed inset-0 modal-bg z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300" id="modalEditNotaContent">
+            <div class="p-5 flex justify-between items-center text-white bg-[#1a2f26]">
+                <h3 class="font-extrabold text-lg flex items-center gap-2">✏️ Edit Nota</h3>
+                <button onclick="window.tutupModalEditNota()" class="text-white/70 hover:text-white text-2xl font-bold transition">&times;</button>
+            </div>
+            <div class="p-6 overflow-y-auto" style="max-height: 75vh">
+                <form id="editNotaForm" class="space-y-4">
+                    <input type="hidden" id="editNotaId">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Tanggal Nota</label>
+                        <input type="date" id="editTanggal" required class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Nama Supplier</label>
+                        <select id="editSupplier" required class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                            <option value="">-- Pilih Supplier --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Status Pembayaran</label>
+                        <select id="editStatus" required class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                            <option value="Lunas">Lunas</option>
+                            <option value="Utang">Utang</option>
+                        </select>
+                    </div>
+                    <div id="editJatuhTempoContainer" class="hidden">
+                        <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Jatuh Tempo</label>
+                        <input type="date" id="editJatuhTempo" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                    </div>
+
+                    <!-- Daftar Item (read-only summary) -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Daftar Produk</label>
+                        <div id="editItemsList" class="bg-gray-50 border border-gray-200 rounded-xl p-3 space-y-1 text-sm font-bold text-gray-700"></div>
+                        <p class="text-[10px] text-gray-400 mt-1">*Daftar produk tidak dapat diubah setelah nota dibuat.</p>
+                    </div>
+
+                    <div class="bg-gray-50 border border-gray-200 rounded-xl p-3 flex justify-between items-center">
+                        <span class="text-xs font-bold text-gray-500 uppercase">Total Nota</span>
+                        <span id="editTotalNota" class="text-lg font-extrabold text-[#1a2f26]">Rp 0</span>
+                    </div>
+
+                    <button type="submit" id="btnSimpanEditNota" class="w-full bg-[#1e5c33] hover:bg-[#154626] text-white font-extrabold py-3.5 rounded-xl transition shadow-md uppercase tracking-wider text-sm mt-2 flex items-center justify-center gap-2">
+                        💾 Simpan Perubahan
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DIREKTORI SUPPLIER (POPUP) -->
+    <div id="modalDirektoriSupplier" class="fixed inset-0 modal-bg z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white w-full max-w-2xl rounded-[2rem] shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300" id="modalDirektoriSupplierContent">
+            <div class="p-5 flex justify-between items-center text-white bg-[#1a2f26]">
+                <h3 class="font-extrabold text-lg flex items-center gap-2">📒 Direktori Kontak Supplier</h3>
+                <button onclick="window.tutupModalDirektoriSupplier()" class="text-white/70 hover:text-white text-2xl font-bold transition">&times;</button>
+            </div>
+            <div class="p-6 overflow-y-auto" style="max-height: 75vh">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+                    <button onclick="window.bukaModalTambahSupplier()" class="bg-[#e8f3ec] hover:bg-[#cbe6d6] text-[#1e5c33] font-bold text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-1.5 shrink-0">
+                        <span>＋</span> Tambahkan Supplier Baru
+                    </button>
+                </div>
+
+                <!-- Search Input -->
+                <div class="mb-5">
+                    <div class="relative">
+                        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <input type="text" id="searchSupplier" placeholder="Cari nama supplier..." class="w-full bg-gray-50 border border-gray-200 p-3 pl-10 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                    </div>
+                </div>
+
+                <!-- Grid Card Supplier -->
+                <div id="supplierCardGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto pr-1">
+                    <div class="col-span-full text-center text-gray-400 animate-pulse font-bold py-8 text-sm">Memuat direktori supplier...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL TAMBAH SUPPLIER BARU -->
+    <div id="modalTambahSupplier" class="fixed inset-0 modal-bg z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white w-full max-w-md rounded-[2rem] shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300" id="modalTambahSupplierContent">
+            <div class="p-5 flex justify-between items-center text-white bg-[#1a2f26]">
+                <h3 class="font-extrabold text-lg">Tambah Supplier Baru</h3>
+                <button onclick="window.tutupModalTambahSupplier()" class="text-white/70 hover:text-white text-2xl font-bold transition">&times;</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Nama Supplier</label>
+                    <input type="text" id="inputNamaSupplierBaru" placeholder="Contoh: Toko Tani Makmur" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">No HP / WhatsApp</label>
+                    <input type="tel" id="inputHpSupplierBaru" placeholder="Contoh: 6281234567890" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                    <p class="text-[10px] text-gray-400 mt-1">Format internasional (awali 62, tanpa + atau 0)</p>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Alamat Lengkap</label>
+                    <textarea id="inputAlamatSupplierBaru" rows="2" placeholder="Jl. Raya No.10, Kota..." class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33] resize-none"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Kategori</label>
+                    <select id="inputKategoriSupplierBaru" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold text-gray-700 text-sm focus:border-[#1e5c33]">
+                        <option value="Pupuk">Pupuk</option>
+                        <option value="Obat">Obat</option>
+                        <option value="Alat Tani">Alat Tani</option>
+                        <option value="Benih">Benih</option>
+                        <option value="Lainnya">Lainnya</option>
+                    </select>
+                </div>
+                <button id="btnSimpanSupplierBaru" onclick="window.simpanSupplierBaru()" class="w-full bg-[#1e5c33] hover:bg-[#154626] text-white font-extrabold py-3.5 rounded-xl transition shadow-md uppercase tracking-wider text-sm mt-2 flex items-center justify-center gap-2">
+                    💾 Simpan Supplier
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBKaa7F02csop4ocmmTwYksEE-oTKVkV0Q",
+            authDomain: "buku-besar-keuangan.firebaseapp.com",
+            projectId: "buku-besar-keuangan",
+            storageBucket: "buku-besar-keuangan.firebasestorage.app",
+            messagingSenderId: "153517228065",
+            appId: "1:153517228065:web:590991b36a11e28bc1e360",
+            measurementId: "G-QDVYYPH7DH",
+            databaseURL: "https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+        let currentUser = null;
+
+        window.pushNotification = function (pesan, jenis = "sukses") {
+            const container = document.getElementById("toastContainer");
+            const toast = document.createElement("div");
+            let bgClass = "bg-[#1a2f26] border border-green-800 text-white";
+            let icon = `<svg class="w-5 h-5 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+
+            if (jenis === "error" || jenis === "peringatan") {
+                bgClass = "bg-red-900 border border-red-800 text-white";
+                icon = `<svg class="w-5 h-5 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
+            }
+            toast.className = `${bgClass} p-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 opacity-0 -translate-y-4 pointer-events-auto font-bold text-xs tracking-wide`;
+            toast.innerHTML = `${icon} <span>${pesan}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.remove("opacity-0", "-translate-y-4");
+                toast.classList.add("opacity-100", "translate-y-0");
+            }, 10);
+            setTimeout(() => {
+                toast.classList.remove("opacity-100", "translate-y-0");
+                toast.classList.add("opacity-0", "-translate-y-2");
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3500);
+        };
+
+        const connectedRef = ref(db, ".info/connected");
+        onValue(connectedRef, (snap) => {
+            const statusEl = document.getElementById("statusKoneksi");
+            if (snap.val() === true) {
+                statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"></span> ONLINE`;
+            } else {
+                statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse"></span> CON...`;
+            }
+        });
+
+        window.bukaModalProfil = function () {
+            const modal = document.getElementById("modalProfil");
+            const content = document.getElementById("modalProfilContent");
+            modal.classList.remove("hidden");
+            if (currentUser) {
+                document.getElementById("profilEmailDisplay").innerText = currentUser.email;
+                let provider = currentUser.providerData[0]?.providerId || "password";
+                document.getElementById("profilProviderDisplay").innerText = provider === "google.com" ? "Google Account" : "Email/Password";
+                if (provider === "google.com") {
+                    document.getElementById("gantiPasswordContainer").classList.add("hidden");
+                } else {
+                    document.getElementById("gantiPasswordContainer").classList.remove("hidden");
+                }
+            }
+            setTimeout(() => {
+                modal.classList.remove("opacity-0");
+                content.classList.remove("scale-95");
+                content.classList.add("scale-100");
+            }, 10);
+        };
+
+        window.tutupModalProfil = function () {
+            const modal = document.getElementById("modalProfil");
+            const content = document.getElementById("modalProfilContent");
+            modal.classList.add("opacity-0");
+            content.classList.remove("scale-100");
+            content.classList.add("scale-95");
+            setTimeout(() => {
+                modal.classList.add("hidden");
+            }, 300);
+        };
+
+        window.bukaModalCicilan = function(id, total, terbayar, riwayatStr) {
+            total = parseFloat(total) || 0;
+            terbayar = parseFloat(terbayar) || 0;
+            const sisa = total - terbayar;
+            
+            document.getElementById('cicilanId').value = id;
+            document.getElementById('cicilanTotal').value = total;
+            document.getElementById('cicilanTerbayarSaatIni').value = terbayar;
+            document.getElementById('cicilanRiwayat').value = riwayatStr || '[]';
+            document.getElementById('cicilanSisaDisplay').textContent = formatRupiah(sisa);
+            document.getElementById('inputJumlahCicilan').value = '';
+            document.getElementById('inputTanggalCicilan').valueAsDate = new Date();
+            
+            const modal = document.getElementById("modalCicilan");
+            const content = document.getElementById("modalCicilanContent");
+            modal.classList.remove("hidden");
+            setTimeout(() => {
+                modal.classList.remove("opacity-0");
+                content.classList.remove("scale-95");
+                content.classList.add("scale-100");
+            }, 10);
+        };
+
+        window.tutupModalCicilan = function() {
+            const modal = document.getElementById("modalCicilan");
+            const content = document.getElementById("modalCicilanContent");
+            modal.classList.add("opacity-0");
+            content.classList.remove("scale-100");
+            content.classList.add("scale-95");
+            setTimeout(() => {
+                modal.classList.add("hidden");
+            }, 300);
+        };
+
+        window.simpanCicilan = async function() {
+            const id = document.getElementById('cicilanId').value;
+            const total = parseFloat(document.getElementById('cicilanTotal').value);
+            const terbayarSaatIni = parseFloat(document.getElementById('cicilanTerbayarSaatIni').value);
+            const bayarBaru = parseFloat(document.getElementById('inputJumlahCicilan').value);
+            const tanggalCicilan = document.getElementById('inputTanggalCicilan').value;
+            const riwayatStr = document.getElementById('cicilanRiwayat').value;
+            
+            if (isNaN(bayarBaru) || bayarBaru <= 0) {
+                window.pushNotification("Masukkan jumlah pembayaran yang valid!", "error");
+                return;
+            }
+            
+            const btn = document.getElementById("btnSimpanCicilan");
+            const oldText = btn.innerHTML;
+            btn.innerHTML = "Menyimpan...";
+            btn.disabled = true;
+            
+            let terbayarBaru = terbayarSaatIni + bayarBaru;
+            let statusBaru = 'Utang';
+            let jatuhTempoBaru = undefined;
+            
+            if (terbayarBaru >= total) {
+                terbayarBaru = total;
+                statusBaru = 'Lunas';
+                jatuhTempoBaru = '-';
+            }
+
+            let riwayat = [];
+            try {
+                riwayat = JSON.parse(decodeURIComponent(riwayatStr));
+                if (!Array.isArray(riwayat)) riwayat = [];
+            } catch(e) { }
+
+            let finalTanggal = new Date().toISOString();
+            if (tanggalCicilan) {
+                const [yyyy, mm, dd] = tanggalCicilan.split('-');
+                const d = new Date();
+                d.setFullYear(yyyy, mm - 1, dd);
+                finalTanggal = d.toISOString();
+            }
+
+            riwayat.push({
+                tanggal: finalTanggal,
+                nominal: bayarBaru
+            });
+            
+            try {
+                const payload = { 
+                    terbayar: terbayarBaru,
+                    status: statusBaru,
+                    riwayat_cicilan: riwayat
+                };
+                if (jatuhTempoBaru) {
+                    payload.jatuh_tempo = jatuhTempoBaru;
+                }
+                
+                await fetch(`https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/nota_supplier/${id}.json`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                window.pushNotification("Pembayaran cicilan berhasil disimpan.");
+                window.tutupModalCicilan();
+                fetchData();
+            } catch (error) {
+                console.error("Gagal simpan cicilan:", error);
+                window.pushNotification("Gagal menyimpan cicilan.", "error");
+            } finally {
+                btn.innerHTML = oldText;
+                btn.disabled = false;
+            }
+        };
+
+        window.handleLogout = function () {
+            signOut(auth).then(() => {
+                window.location.href = "login.html";
+            }).catch((error) => {
+                console.error("Logout error", error);
+            });
+        };
+
+        window.handleUpdatePasswordUI = async function () {
+            const newPass = document.getElementById("profilNewPassword").value;
+            if (!newPass || newPass.length < 6) {
+                window.pushNotification("Password minimal 6 karakter!", "error");
+                return;
+            }
+            const btn = document.getElementById("btnSimpanPassword");
+            const oldText = btn.innerHTML;
+            btn.innerHTML = "Menyimpan...";
+            btn.disabled = true;
+            try {
+                await updatePassword(currentUser, newPass);
+                window.pushNotification("Password berhasil diubah!");
+                document.getElementById("profilNewPassword").value = "";
+                window.tutupModalProfil();
+            } catch (error) {
+                console.error(error);
+                window.pushNotification("Gagal ubah password. Coba login ulang.", "error");
+            } finally {
+                btn.innerHTML = oldText;
+                btn.disabled = false;
+            }
+        };
+
+        // ==========================================
+        // MODAL TAMBAH NOTA BARU
+        // ==========================================
+        window.bukaModalTambahNota = function () {
+            const modal = document.getElementById("modalTambahNota");
+            const content = document.getElementById("modalTambahNotaContent");
+            // Reset form
+            keranjangItem = [];
+            renderKeranjang();
+            document.getElementById('inputTanggal').valueAsDate = new Date();
+            document.getElementById('inputSupplier').value = '';
+            document.getElementById('inputStatus').value = 'Lunas';
+            document.getElementById('inputJatuhTempo').value = '';
+            document.getElementById('jatuhTempoContainer').classList.add('hidden');
+            modal.classList.remove("hidden");
+            setTimeout(() => {
+                modal.classList.remove("opacity-0");
+                content.classList.remove("scale-95");
+                content.classList.add("scale-100");
+            }, 10);
+        };
+
+        window.tutupModalTambahNota = function () {
+            const modal = document.getElementById("modalTambahNota");
+            const content = document.getElementById("modalTambahNotaContent");
+            modal.classList.add("opacity-0");
+            content.classList.remove("scale-100");
+            content.classList.add("scale-95");
+            setTimeout(() => {
+                modal.classList.add("hidden");
+            }, 300);
+        };
+
+        // ==========================================
+        // MODAL DIREKTORI SUPPLIER (POPUP)
+        // ==========================================
+        window.bukaModalDirektoriSupplier = function () {
+            const modal = document.getElementById("modalDirektoriSupplier");
+            const content = document.getElementById("modalDirektoriSupplierContent");
+            modal.classList.remove("hidden");
+            setTimeout(() => {
+                modal.classList.remove("opacity-0");
+                content.classList.remove("scale-95");
+                content.classList.add("scale-100");
+            }, 10);
+        };
+
+        window.tutupModalDirektoriSupplier = function () {
+            const modal = document.getElementById("modalDirektoriSupplier");
+            const content = document.getElementById("modalDirektoriSupplierContent");
+            modal.classList.add("opacity-0");
+            content.classList.remove("scale-100");
+            content.classList.add("scale-95");
+            setTimeout(() => {
+                modal.classList.add("hidden");
+            }, 300);
+        };
+
+        // ==========================================
+        // MODAL TAMBAH SUPPLIER BARU
+        // ==========================================
+        window.bukaModalTambahSupplier = function () {
+            const modal = document.getElementById("modalTambahSupplier");
+            const content = document.getElementById("modalTambahSupplierContent");
+            // Reset form
+            document.getElementById('inputNamaSupplierBaru').value = '';
+            document.getElementById('inputHpSupplierBaru').value = '';
+            document.getElementById('inputAlamatSupplierBaru').value = '';
+            document.getElementById('inputKategoriSupplierBaru').value = 'Pupuk';
+            modal.classList.remove("hidden");
+            setTimeout(() => {
+                modal.classList.remove("opacity-0");
+                content.classList.remove("scale-95");
+                content.classList.add("scale-100");
+            }, 10);
+        };
+
+        window.tutupModalTambahSupplier = function () {
+            const modal = document.getElementById("modalTambahSupplier");
+            const content = document.getElementById("modalTambahSupplierContent");
+            modal.classList.add("opacity-0");
+            content.classList.remove("scale-100");
+            content.classList.add("scale-95");
+            setTimeout(() => {
+                modal.classList.add("hidden");
+            }, 300);
+        };
+
+        window.simpanSupplierBaru = async function () {
+            const nama = document.getElementById('inputNamaSupplierBaru').value.trim();
+            const hp = document.getElementById('inputHpSupplierBaru').value.trim();
+            const alamat = document.getElementById('inputAlamatSupplierBaru').value.trim();
+            const kategori = document.getElementById('inputKategoriSupplierBaru').value;
+
+            if (!nama) {
+                window.pushNotification("Nama supplier wajib diisi!", "error");
+                return;
+            }
+            if (!hp) {
+                window.pushNotification("No HP/WhatsApp wajib diisi!", "error");
+                return;
+            }
+
+            const btn = document.getElementById("btnSimpanSupplierBaru");
+            const oldText = btn.innerHTML;
+            btn.innerHTML = "Menyimpan...";
+            btn.disabled = true;
+
+            const payload = {
+                nama: nama,
+                hp: hp,
+                alamat: alamat || '-',
+                kategori: kategori
+            };
+
+            try {
+                await fetch(URL_SUPPLIER, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                window.pushNotification("Supplier baru berhasil ditambahkan.");
+                window.tutupModalTambahSupplier();
+                fetchSupplierData();
+            } catch (error) {
+                console.error("Gagal menyimpan supplier:", error);
+                window.pushNotification("Gagal menyimpan supplier baru.", "error");
+            } finally {
+                btn.innerHTML = oldText;
+                btn.disabled = false;
+            }
+        };
+
+        // ==========================================
+        // AUTH STATE
+        // ==========================================
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = "login.html";
+            } else {
+                currentUser = user;
+                document.getElementById('mainApp').classList.remove('hidden');
+                setTimeout(() => {
+                    document.getElementById('mainApp').classList.remove('opacity-0');
+                }, 50);
+                fetchData();
+                fetchSupplierData();
+            }
+        });
+        
+        const URL_NOTA = 'https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/nota_supplier.json';
+        const URL_HARGA = 'https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/harga_produk.json';
+        const URL_RIWAYAT_STOK = 'https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/riwayat_stok.json';
+        const URL_SUPPLIER = 'https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/daftar_supplier.json';
+        const URL_UNIT = 'https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/jenis_unit.json';
+
+        const formatRupiah = (number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
+
+        const formatDate = (dateString) => {
+            if (!dateString) return '-';
+            const d = new Date(dateString);
+            return new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }).format(d);
+        };
+
+        const form = document.getElementById('notaForm');
+        const inputStatus = document.getElementById('inputStatus');
+        const jatuhTempoContainer = document.getElementById('jatuhTempoContainer');
+        const inputJatuhTempo = document.getElementById('inputJatuhTempo');
+        const tableBody = document.getElementById('tableBody');
+        const datalist = document.getElementById('produkSuggestions');
+
+        const metricTotalPembelian = document.getElementById('metricTotalPembelian');
+        const metricTotalLunas = document.getElementById('metricTotalLunas');
+        const metricSisaUtang = document.getElementById('metricSisaUtang');
+
+        // ==========================================
+        // DIREKTORI SUPPLIER - FETCH, RENDER, SEARCH
+        // ==========================================
+        let allSupplierData = []; // Cache untuk pencarian
+
+        const fetchSupplierData = async () => {
+            try {
+                const ts = new Date().getTime();
+                const res = await fetch(URL_SUPPLIER + '?ts=' + ts);
+                const data = await res.json();
+                if (!data) {
+                    allSupplierData = [];
+                    renderSupplierCards([]);
+                    populateSupplierDropdown([]);
+                    return;
+                }
+                allSupplierData = Object.entries(data).map(([id, val]) => ({ id, ...val }));
+                renderSupplierCards(allSupplierData);
+                populateSupplierDropdown(allSupplierData);
+            } catch (error) {
+                console.error("Gagal memuat direktori supplier:", error);
+                document.getElementById('supplierCardGrid').innerHTML = `<div class="col-span-full text-center text-red-500 font-bold py-8 text-sm">Gagal memuat data supplier.</div>`;
+            }
+        };
+
+        const renderSupplierCards = (data) => {
+            const grid = document.getElementById('supplierCardGrid');
+            if (!data || data.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center text-gray-400 font-bold py-8 text-sm">Belum ada supplier terdaftar.</div>`;
+                return;
+            }
+
+            grid.innerHTML = '';
+            data.forEach(item => {
+                const hpClean = String(item.hp || '').replace(/[^0-9]/g, '');
+                const waLink = hpClean ? `https://wa.me/${hpClean}` : '#';
+
+                const kategoriColors = {
+                    'Pupuk': 'bg-green-100 text-green-700',
+                    'Obat': 'bg-blue-100 text-blue-700',
+                    'Alat Tani': 'bg-amber-100 text-amber-700',
+                    'Benih': 'bg-purple-100 text-purple-700',
+                    'Lainnya': 'bg-gray-100 text-gray-600'
+                };
+                const badgeClass = kategoriColors[item.kategori] || kategoriColors['Lainnya'];
+
+                const card = document.createElement('div');
+                card.className = 'bg-white shadow-sm rounded-xl p-4 flex flex-col gap-2.5 border border-gray-100 hover:shadow-md transition-shadow supplier-card';
+                card.setAttribute('data-nama', (item.nama || '').toLowerCase());
+                card.innerHTML = `
+                    <div class="flex items-start justify-between gap-2">
+                        <h3 class="font-extrabold text-slate-800 text-sm leading-tight">${item.nama || '-'}</h3>
+                        <span class="${badgeClass} text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider whitespace-nowrap shrink-0">${item.kategori || '-'}</span>
+                    </div>
+                    <div class="space-y-1 mt-1">
+                        <div class="flex items-start gap-1.5">
+                            <span class="text-[10px] text-gray-400 font-bold uppercase w-12 shrink-0 pt-px">No HP</span>
+                            <span class="text-xs font-bold text-gray-700">${item.hp || '-'}</span>
+                        </div>
+                        <div class="flex items-start gap-1.5">
+                            <span class="text-[10px] text-gray-400 font-bold uppercase w-12 shrink-0 pt-px">Alamat</span>
+                            <span class="text-xs text-gray-600 leading-relaxed">${item.alamat || '-'}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 mt-auto pt-2">
+                        <a href="${waLink}" target="_blank" rel="noopener noreferrer" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs py-2 px-3 rounded-lg transition flex items-center justify-center gap-1.5 shadow-sm">
+                            💬 Hubungi WA
+                        </a>
+                        <button onclick="window.hapusSupplier('${item.id}')" class="text-gray-300 hover:text-red-500 transition p-1.5" title="Hapus supplier">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        };
+
+        const populateSupplierDropdown = (data) => {
+            const select = document.getElementById('inputSupplier');
+            const currentVal = select.value;
+            // Clear options except the first placeholder
+            select.innerHTML = '<option value="">-- Pilih Supplier --</option>';
+            if (data && data.length > 0) {
+                data.forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item.nama;
+                    opt.textContent = item.nama;
+                    select.appendChild(opt);
+                });
+            }
+            // Restore previous selection if still available
+            if (currentVal) {
+                select.value = currentVal;
+            }
+        };
+
+        // Realtime search filtering
+        document.getElementById('searchSupplier').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            const cards = document.querySelectorAll('.supplier-card');
+            let visibleCount = 0;
+            cards.forEach(card => {
+                const nama = card.getAttribute('data-nama') || '';
+                if (nama.includes(query)) {
+                    card.style.display = '';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            // Show empty state if no matches
+            const grid = document.getElementById('supplierCardGrid');
+            const existingEmpty = grid.querySelector('.search-empty-state');
+            if (existingEmpty) existingEmpty.remove();
+            if (visibleCount === 0 && allSupplierData.length > 0 && query) {
+                const emptyDiv = document.createElement('div');
+                emptyDiv.className = 'col-span-full text-center text-gray-400 font-bold py-6 text-sm search-empty-state';
+                emptyDiv.textContent = `Tidak ditemukan supplier "${e.target.value}"`;
+                grid.appendChild(emptyDiv);
+            }
+        });
+
+        window.hapusSupplier = async (id) => {
+            const result = await Swal.fire({
+                title: 'Hapus Supplier?',
+                text: "Apakah Anda yakin ingin menghapus supplier ini dari direktori?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#1e5c33',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
+            });
+            if (!result.isConfirmed) return;
+            try {
+                await fetch(`https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/daftar_supplier/${id}.json`, {
+                    method: 'DELETE'
+                });
+                window.pushNotification("Supplier berhasil dihapus.");
+                fetchSupplierData();
+            } catch (error) {
+                console.error("Gagal menghapus supplier:", error);
+                window.pushNotification("Gagal menghapus supplier.", "error");
+            }
+        };
+
+        // ==========================================
+        // KERANJANG SYSTEM LOGIC
+        // ==========================================
+        let keranjangItem = [];
+        let existingProducts = {};
+
+        const renderKeranjang = () => {
+            const tbody = document.getElementById('keranjangBody');
+            const totalSementaraEl = document.getElementById('totalSementara');
+            const btnSimpanNota = document.getElementById('btnSimpanNota');
+
+            if (keranjangItem.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="p-3 text-center text-gray-400 italic font-bold">Keranjang kosong</td></tr>`;
+                totalSementaraEl.textContent = 'Rp 0';
+                btnSimpanNota.disabled = true;
+                return;
+            }
+
+            let total = 0;
+            tbody.innerHTML = '';
+            keranjangItem.forEach((item, index) => {
+                const subtotal = item.unit * item.harga_beli;
+                total += subtotal;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-2 pl-3">
+                        <div class="font-bold text-gray-700 text-[11px]">${item.produk}</div>
+                        <div class="text-[10px] text-gray-500">${item.unit} x ${formatRupiah(item.harga_beli)}</div>
+                    </td>
+                    <td class="p-2 text-right font-bold text-gray-800 text-[11px]">${formatRupiah(subtotal)}</td>
+                    <td class="p-2 text-center">
+                        <button type="button" onclick="window.hapusItemKeranjang(${index})" class="text-red-400 hover:text-red-600 font-bold p-1 transition-colors">❌</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            totalSementaraEl.textContent = formatRupiah(total);
+            btnSimpanNota.disabled = false;
+        };
+
+        window.hapusItemKeranjang = (index) => {
+            keranjangItem.splice(index, 1);
+            renderKeranjang();
+        };
+
+        document.getElementById('btnTambahKeranjang').addEventListener('click', () => {
+            const produk = document.getElementById('inputProduk').value.trim();
+            const qty = parseFloat(document.getElementById('inputQty').value);
+            const harga = parseFloat(document.getElementById('inputHarga').value);
+
+            if (!produk) {
+                window.pushNotification("Harap isi nama produk!", "error");
+                document.getElementById('inputProduk').focus();
+                return;
+            }
+            if (isNaN(harga) || harga < 0) {
+                window.pushNotification("Harap isi harga satuan dengan benar!", "error");
+                document.getElementById('inputHarga').focus();
+                return;
+            }
+            if (isNaN(qty) || qty <= 0) {
+                window.pushNotification("Harap isi jumlah/unit dengan benar!", "error");
+                document.getElementById('inputQty').focus();
+                return;
+            }
+
+            keranjangItem.push({
+                produk: produk,
+                unit: qty,
+                harga_beli: harga,
+                jenis_unit: document.getElementById('inputUnit').value.trim() || 'pcs'
+            });
+
+            document.getElementById('inputProduk').value = '';
+            document.getElementById('inputQty').value = '1';
+            document.getElementById('inputHarga').value = '';
+            document.getElementById('inputUnit').value = '';
+            document.getElementById('inputProduk').focus();
+
+            renderKeranjang();
+        });
+
+
+        inputStatus.addEventListener('change', (e) => {
+            if (e.target.value === 'Utang') {
+                jatuhTempoContainer.classList.remove('hidden');
+                inputJatuhTempo.required = true;
+                inputJatuhTempo.value = '';
+            } else {
+                jatuhTempoContainer.classList.add('hidden');
+                inputJatuhTempo.required = false;
+                inputJatuhTempo.value = '-';
+            }
+        });
+
+        const fetchData = async () => {
+            try {
+                const ts = new Date().getTime();
+                const [resNota, resHarga] = await Promise.all([
+                    fetch(URL_NOTA + '?ts=' + ts),
+                    fetch(URL_HARGA + '?ts=' + ts)
+                ]);
+                
+                const dataNota = await resNota.json() || {};
+                const dataHarga = await resHarga.json() || {};
+
+                processNotaData(dataNota);
+                processHargaData(dataHarga);
+                
+            } catch (error) {
+                console.error("Gagal mengambil data:", error);
+                tableBody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-rose-500 font-bold">Gagal memuat data dari Firebase.</td></tr>`;
+            }
+        };
+
+        const processHargaData = (data) => {
+            existingProducts = {};
+            const products = new Set();
+            
+            Object.entries(data).forEach(([id, item]) => {
+                if (!item) return;
+                const namaProduk = item.nama || item.produk;
+                if (namaProduk && String(namaProduk).trim() !== '' && namaProduk !== '-') {
+                    const cleanName = namaProduk.trim();
+                    products.add(cleanName);
+                    existingProducts[cleanName.toLowerCase()] = {
+                        id: id,
+                        stok: parseFloat(item.stok) || 0,
+                        ...item
+                    };
+                }
+            });
+
+            datalist.innerHTML = '';
+            products.forEach(prod => {
+                const option = document.createElement('option');
+                option.value = prod;
+                datalist.appendChild(option);
+            });
+        };
+
+        const processNotaData = (data) => {
+            const rawData = Object.entries(data).map(([id, val]) => ({ id, ...val }));
+            rawData.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+            renderTable(rawData);
+            calculateMetrics(rawData);
+        };
+
+        const renderTable = (data) => {
+            if (data.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-slate-500 font-bold">Belum ada transaksi pembelian supplier.</td></tr>`;
+                return;
+            }
+            tableBody.innerHTML = '';
+            data.forEach(item => {
+                const total = parseFloat(item.total_nota || item.total) || 0;
+                let terbayar = parseFloat(item.terbayar) || 0;
+                const isLunas = item.status === 'Lunas';
+                if (isLunas && terbayar === 0) terbayar = total;
+                const riwayatStr = encodeURIComponent(JSON.stringify(item.riwayat_cicilan || []));
+                let riwayatHTML = '';
+                if (item.riwayat_cicilan && Array.isArray(item.riwayat_cicilan) && item.riwayat_cicilan.length > 0) {
+                    const listRiwayat = item.riwayat_cicilan.map((r, rIndex) => `
+                        <div class="flex justify-between items-center w-full text-[9px] text-gray-500 border-b border-gray-100 last:border-0 py-1 group">
+                            <span class="text-left">${formatDate(r.tanggal)}</span>
+                            <div class="flex items-center gap-1">
+                                <span class="font-bold text-right text-green-600">+${formatRupiah(r.nominal)}</span>
+                                <button onclick="window.hapusRiwayatCicilan('${item.id}', ${rIndex}, '${riwayatStr}', ${r.nominal}, ${terbayar})" class="text-red-400 hover:text-red-600 px-1 opacity-0 group-hover:opacity-100 transition-opacity" title="Batal Pembayaran ini">❌</button>
+                            </div>
+                        </div>
+                    `).join('');
+                    riwayatHTML = `<div class="w-full mt-2 p-2 bg-gray-50 rounded-lg border border-gray-200 max-h-24 overflow-y-auto shadow-inner" style="-ms-overflow-style: none; scrollbar-width: none;">${listRiwayat}</div>`;
+                }
+                let statusBadge = '';
+                if (isLunas) {
+                    statusBadge = `<div class="flex flex-col items-center gap-1.5 w-full max-w-[140px] mx-auto">
+                        <span class="bg-green-100 text-green-700 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Lunas</span>
+                        ${riwayatHTML}
+                    </div>`;
+                } else {
+                    const progressPersen = total > 0 ? Math.min(100, Math.round((terbayar / total) * 100)) : 0;
+                    statusBadge = `<div class="flex flex-col items-center gap-1.5 w-full max-w-[140px] mx-auto">
+                         <span class="bg-red-100 text-red-700 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Utang</span>
+                         <div class="w-full bg-gray-200 rounded-full h-1.5">
+                             <div class="bg-blue-500 h-1.5 rounded-full" style="width: ${progressPersen}%"></div>
+                         </div>
+                         <span class="text-[9px] text-gray-500 font-bold whitespace-nowrap">Sisa: ${formatRupiah(total - terbayar)}</span>
+                         <span class="text-[9px] text-gray-400 font-bold whitespace-nowrap">Jatuh Tempo: ${item.jatuh_tempo !== '-' ? formatDate(item.jatuh_tempo) : '-'}</span>
+                         ${riwayatHTML}
+                       </div>`;
+                }
+                const itemDataStr = encodeURIComponent(JSON.stringify(item));
+                let actionButtons = '';
+                actionButtons += `<button onclick="window.bukaModalDetailNota('${itemDataStr}')" class="text-[11px] bg-indigo-100 hover:bg-indigo-200 text-indigo-800 font-bold px-3 py-1.5 rounded-lg transition-colors mb-1.5 w-full text-center tracking-wide">📋 Detail</button>`;
+                actionButtons += `<button onclick="window.bukaModalEditNota('${itemDataStr}')" class="text-[11px] bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-3 py-1.5 rounded-lg transition-colors mb-1.5 w-full text-center tracking-wide">✏️ Edit</button>`;
+                if (!isLunas) {
+                    actionButtons += `<button onclick="window.bukaModalCicilan('${item.id}', ${total}, ${terbayar}, '${riwayatStr}')" class="text-[11px] bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold px-3 py-1.5 rounded-lg transition-colors mb-1.5 w-full text-center tracking-wide flex items-center justify-center gap-1">💸 Bayar Cicilan</button>`;
+                    actionButtons += `<button onclick="window.markLunas('${item.id}', ${total}, ${terbayar}, '${riwayatStr}')" class="text-[11px] bg-orange-100 hover:bg-orange-200 text-orange-800 font-bold px-3 py-1.5 rounded-lg transition-colors mb-1.5 w-full text-center tracking-wide">✅ Tandai Lunas</button>`;
+                } else if (item.riwayat_cicilan && item.riwayat_cicilan.length > 0) {
+                    actionButtons += `<button onclick="window.batalLunas('${item.id}', ${terbayar}, '${riwayatStr}')" class="text-[11px] bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-bold px-3 py-1.5 rounded-lg transition-colors mb-1.5 w-full text-center tracking-wide">↩️ Batal Lunas</button>`;
+                }
+                actionButtons += `<button onclick="window.hapusNota('${item.id}')" class="text-[11px] bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-700 font-bold px-3 py-1.5 rounded-lg transition-colors w-full text-center tracking-wide">🗑️ Hapus</button>`;
+                let itemsHtml = '';
+                if (item.items && Array.isArray(item.items)) {
+                    itemsHtml = item.items.map(i => {
+                        const sub = (i.unit || 0) * (i.harga_beli || 0);
+                        return `<div class="flex justify-between items-baseline gap-2"><span>&bull; ${i.produk} <span class="text-gray-400">(${i.unit} ${i.jenis_unit || 'pcs'} x ${formatRupiah(i.harga_beli)})</span></span><span class="text-gray-500 font-bold whitespace-nowrap">${formatRupiah(sub)}</span></div>`;
+                    }).join('');
+                } else if (item.produk) {
+                    itemsHtml = `&bull; ${item.produk} <span class="text-gray-400">(${item.qty || 0} Unit)</span>`;
+                }
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-3 pl-4 align-top"><div class="text-xs font-bold text-gray-500">${formatDate(item.tanggal)}</div></td>
+                    <td class="p-3 align-top"><div class="text-sm font-extrabold text-[#1a2f26]">${item.supplier}</div></td>
+                    <td class="p-3 align-top"><div class="text-[11px] font-bold text-gray-700 leading-snug">${itemsHtml}</div></td>
+                    <td class="p-3 text-right align-top"><div class="text-sm font-extrabold text-[#1a2f26]">${formatRupiah(total)}</div></td>
+                    <td class="p-3 text-center align-top">${statusBadge}</td>
+                    <td class="p-3 text-center align-top"><div class="flex flex-col items-center justify-center max-w-[120px] mx-auto">${actionButtons}</div></td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        };
+
+        const calculateMetrics = (data) => {
+            let totalPembelian = 0;
+            let totalLunas = 0;
+            let sisaUtang = 0;
+            data.forEach(item => {
+                const total = parseFloat(item.total_nota || item.total) || 0;
+                let terbayar = parseFloat(item.terbayar) || 0;
+                if (item.status === 'Lunas' && terbayar === 0) terbayar = total;
+                totalPembelian += total;
+                if (item.status === 'Lunas') {
+                    totalLunas += total;
+                } else if (item.status === 'Utang') {
+                    totalLunas += terbayar;
+                    sisaUtang += (total - terbayar);
+                }
+            });
+            metricTotalPembelian.textContent = formatRupiah(totalPembelian);
+            metricTotalLunas.textContent = formatRupiah(totalLunas);
+            metricSisaUtang.textContent = formatRupiah(sisaUtang);
+        };
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (keranjangItem.length === 0) {
+                window.pushNotification("Keranjang masih kosong!", "error");
+                return;
+            }
+            const submitBtn = document.getElementById('btnSimpanNota');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.innerHTML = `<span>Menyimpan...</span>`;
+            submitBtn.disabled = true;
+            const tanggal = document.getElementById('inputTanggal').value;
+            const supplier = document.getElementById('inputSupplier').value;
+            const status = inputStatus.value;
+            const jatuh_tempo = status === 'Utang' ? inputJatuhTempo.value : "-";
+            const total_nota = keranjangItem.reduce((sum, item) => sum + (item.unit * item.harga_beli), 0);
+            const payloadNota = {
+                tanggal: tanggal, supplier: supplier, status: status, jatuh_tempo: jatuh_tempo,
+                total_nota: total_nota, terbayar: status === 'Lunas' ? total_nota : 0, items: keranjangItem
+            };
+            try {
+                await fetch(URL_NOTA, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payloadNota) });
+                const promises = [];
+                keranjangItem.forEach(item => {
+                    const prodNameLower = item.produk.trim().toLowerCase();
+                    const existingProduct = existingProducts[prodNameLower];
+                    if (existingProduct) {
+                        const newStok = existingProduct.stok + parseFloat(item.unit);
+                        promises.push(fetch(`https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/harga_produk/${existingProduct.id}.json`, {
+                            method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ stok: newStok, hargaBeli: item.harga_beli })
+                        }));
+                    } else {
+                        promises.push(fetch(URL_HARGA, {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ nama: item.produk.trim(), stok: parseFloat(item.unit), hargaBeli: item.harga_beli, kategori: "-", unit: "-", hargaJual: 0, isNewStock: true, tanggal: tanggal })
+                        }));
+                    }
+                    promises.push(fetch(URL_RIWAYAT_STOK, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ tanggal: tanggal, produk: item.produk, jumlah: parseFloat(item.unit), tipe: "Masuk", keterangan: "Pembelian Grosir dari Supplier: " + supplier })
+                    }));
+                });
+                await Promise.all(promises);
+                form.reset();
+                keranjangItem = [];
+                renderKeranjang();
+                document.getElementById('inputTanggal').valueAsDate = new Date();
+                jatuhTempoContainer.classList.add('hidden');
+                inputJatuhTempo.required = false;
+                inputJatuhTempo.value = '-';
+                fetchData();
+                window.pushNotification("Data nota berhasil disimpan.");
+            } catch (error) {
+                console.error("Gagal menyimpan data:", error);
+                window.pushNotification("Terjadi kesalahan saat menyimpan data.", "error");
+            } finally {
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        window.batalLunas = async (id, terbayar, riwayatStr) => {
+            const result = await Swal.fire({ title: 'Batal Lunas?', text: "Batalkan status lunas untuk transaksi ini?", icon: 'warning', showCancelButton: true, confirmButtonColor: '#1e5c33', cancelButtonColor: '#d33', confirmButtonText: 'Ya, batalkan!', cancelButtonText: 'Kembali' });
+            if (!result.isConfirmed) return;
+            try {
+                let riwayat = [];
+                if (riwayatStr) { try { riwayat = JSON.parse(decodeURIComponent(riwayatStr)); } catch(e){} }
+                if (riwayat.length > 0) riwayat.pop();
+                let newTerbayar = riwayat.reduce((sum, item) => sum + item.nominal, 0);
+                await fetch(`https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/nota_supplier/${id}.json`, {
+                    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'Utang', terbayar: newTerbayar, riwayat_cicilan: riwayat })
+                });
+                window.pushNotification("Status berhasil diupdate menjadi Utang.");
+                fetchData();
+            } catch (error) {
+                console.error("Gagal update status:", error);
+                window.pushNotification("Gagal membatalkan status pelunasan.", "error");
+            }
+        };
+
+        window.hapusRiwayatCicilan = async (id, rIndex, riwayatStr, nominal, terbayarSaatIni) => {
+            const result = await Swal.fire({ title: 'Batalkan Pembayaran?', text: `Apakah Anda yakin ingin membatalkan pembayaran cicilan sebesar ${formatRupiah(nominal)}?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#1e5c33', cancelButtonColor: '#d33', confirmButtonText: 'Ya, batalkan!', cancelButtonText: 'Kembali' });
+            if (!result.isConfirmed) return;
+            try {
+                let riwayat = [];
+                if (riwayatStr) { try { riwayat = JSON.parse(decodeURIComponent(riwayatStr)); } catch(e){} }
+                riwayat.splice(rIndex, 1);
+                let terbayarBaru = riwayat.reduce((sum, item) => sum + item.nominal, 0);
+                await fetch(`https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/nota_supplier/${id}.json`, {
+                    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ terbayar: terbayarBaru, riwayat_cicilan: riwayat, status: 'Utang' })
+                });
+                window.pushNotification("Pembayaran cicilan berhasil dibatalkan.");
+                fetchData();
+            } catch (error) {
+                console.error("Gagal batalkan cicilan:", error);
+                window.pushNotification("Gagal membatalkan pembayaran cicilan.", "error");
+            }
+        };
+
+        window.markLunas = async (id, total, terbayar, riwayatStr) => {
+            const result = await Swal.fire({ title: 'Tandai Lunas?', text: "Tandai transaksi ini sebagai Lunas?", icon: 'question', showCancelButton: true, confirmButtonColor: '#1e5c33', cancelButtonColor: '#d33', confirmButtonText: 'Ya, lunas!', cancelButtonText: 'Batal' });
+            if (!result.isConfirmed) return;
+            try {
+                let riwayat = [];
+                if (riwayatStr) { try { riwayat = JSON.parse(decodeURIComponent(riwayatStr)); } catch(e){} }
+                const sisa = total - terbayar;
+                if (sisa > 0) {
+                    riwayat.push({ tanggal: new Date().toISOString(), nominal: sisa });
+                }
+                await fetch(`https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/nota_supplier/${id}.json`, {
+                    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'Lunas', terbayar: total, jatuh_tempo: '-', riwayat_cicilan: riwayat })
+                });
+                window.pushNotification("Transaksi berhasil ditandai Lunas.");
+                fetchData();
+            } catch (error) {
+                console.error("Gagal update status:", error);
+                window.pushNotification("Gagal mengubah status.", "error");
+            }
+        };
+
+        window.hapusNota = async (id) => {
+            const result = await Swal.fire({ title: 'Hapus Nota?', text: "Apakah Anda yakin ingin menghapus nota ini secara permanen?", icon: 'warning', showCancelButton: true, confirmButtonColor: '#1e5c33', cancelButtonColor: '#d33', confirmButtonText: 'Ya, hapus!', cancelButtonText: 'Batal' });
+            if (!result.isConfirmed) return;
+            try {
+                await fetch(`https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/nota_supplier/${id}.json`, { method: 'DELETE' });
+                window.pushNotification("Nota berhasil dihapus.");
+                fetchData();
+            } catch (error) {
+                console.error("Gagal hapus nota:", error);
+                window.pushNotification("Gagal menghapus nota.", "error");
+            }
+        };
+
+        // ==========================================
+        // MODAL DETAIL NOTA
+        // ==========================================
+        window.bukaModalDetailNota = function (encodedData) {
+            const item = JSON.parse(decodeURIComponent(encodedData));
+            const total = parseFloat(item.total_nota || item.total) || 0;
+            let terbayar = parseFloat(item.terbayar) || 0;
+            if (item.status === 'Lunas' && terbayar === 0) terbayar = total;
+
+            let itemsHtml = '<p class="text-gray-400 text-xs italic">Tidak ada data produk</p>';
+            if (item.items && Array.isArray(item.items) && item.items.length > 0) {
+                itemsHtml = '<div class="space-y-2">' + item.items.map(i => {
+                    const sub = (i.unit || 0) * (i.harga_beli || 0);
+                return `<div class="flex justify-between items-center bg-gray-50 rounded-lg px-3 py-2">
+                    <div><span class="font-bold text-sm text-gray-800">${i.produk}</span><br><span class="text-[10px] text-gray-400">${i.unit} ${i.jenis_unit || 'pcs'} x ${formatRupiah(i.harga_beli)}</span></div>
+                    <span class="font-bold text-sm text-gray-700">${formatRupiah(sub)}</span>
+                </div>`;
+                }).join('') + '</div>';
+            }
+
+            let riwayatHtml = '';
+            if (item.riwayat_cicilan && Array.isArray(item.riwayat_cicilan) && item.riwayat_cicilan.length > 0) {
+                riwayatHtml = `<div class="mt-4"><p class="text-xs font-bold text-gray-500 uppercase mb-2">Riwayat Pembayaran</p><div class="space-y-1">` +
+                    item.riwayat_cicilan.map(r => `<div class="flex justify-between bg-green-50 rounded-lg px-3 py-2 text-xs"><span class="text-gray-600">${formatDate(r.tanggal)}</span><span class="font-bold text-green-700">+${formatRupiah(r.nominal)}</span></div>`).join('') +
+                    `</div></div>`;
+            }
+
+            const body = document.getElementById('detailNotaBody');
+            body.innerHTML = `
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div><p class="text-[10px] text-gray-400 font-bold uppercase">Tanggal</p><p class="font-bold text-sm text-gray-800">${formatDate(item.tanggal)}</p></div>
+                        <div><p class="text-[10px] text-gray-400 font-bold uppercase">Supplier</p><p class="font-bold text-sm text-gray-800">${item.supplier || '-'}</p></div>
+                        <div><p class="text-[10px] text-gray-400 font-bold uppercase">Status</p><span class="${item.status === 'Lunas' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'} text-[10px] font-bold px-2.5 py-1 rounded-full uppercase">${item.status}</span></div>
+                        <div><p class="text-[10px] text-gray-400 font-bold uppercase">Jatuh Tempo</p><p class="font-bold text-sm text-gray-800">${item.jatuh_tempo && item.jatuh_tempo !== '-' ? formatDate(item.jatuh_tempo) : '-'}</p></div>
+                    </div>
+                    <div><p class="text-xs font-bold text-gray-500 uppercase mb-2">Daftar Produk</p>${itemsHtml}</div>
+                    <div class="bg-[#1a2f26] text-white rounded-xl p-4 flex justify-between items-center">
+                        <span class="text-xs font-bold uppercase">Total Nota</span>
+                        <span class="text-xl font-extrabold">${formatRupiah(total)}</span>
+                    </div>
+                    ${item.status === 'Utang' ? `<div class="flex justify-between text-sm"><span class="text-gray-500 font-bold">Terbayar</span><span class="font-bold text-green-600">${formatRupiah(terbayar)}</span></div><div class="flex justify-between text-sm"><span class="text-gray-500 font-bold">Sisa Utang</span><span class="font-bold text-red-600">${formatRupiah(total - terbayar)}</span></div>` : ''}
+                    ${riwayatHtml}
+                </div>`;
+
+            const modal = document.getElementById("modalDetailNota");
+            const content = document.getElementById("modalDetailNotaContent");
+            modal.classList.remove("hidden");
+            setTimeout(() => { modal.classList.remove("opacity-0"); content.classList.remove("scale-95"); content.classList.add("scale-100"); }, 10);
+        };
+
+        window.tutupModalDetailNota = function () {
+            const modal = document.getElementById("modalDetailNota");
+            const content = document.getElementById("modalDetailNotaContent");
+            modal.classList.add("opacity-0"); content.classList.remove("scale-100"); content.classList.add("scale-95");
+            setTimeout(() => { modal.classList.add("hidden"); }, 300);
+        };
+
+        // ==========================================
+        // MODAL EDIT NOTA
+        // ==========================================
+        window.bukaModalEditNota = function (encodedData) {
+            const item = JSON.parse(decodeURIComponent(encodedData));
+            const total = parseFloat(item.total_nota || item.total) || 0;
+
+            document.getElementById('editNotaId').value = item.id;
+            document.getElementById('editTanggal').value = item.tanggal ? item.tanggal.substring(0, 10) : '';
+            document.getElementById('editStatus').value = item.status || 'Lunas';
+            document.getElementById('editTotalNota').textContent = formatRupiah(total);
+
+            // Populate supplier dropdown
+            const editSelect = document.getElementById('editSupplier');
+            editSelect.innerHTML = '<option value="">-- Pilih Supplier --</option>';
+            allSupplierData.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.nama;
+                opt.textContent = s.nama;
+                editSelect.appendChild(opt);
+            });
+            editSelect.value = item.supplier || '';
+
+            // Jatuh tempo
+            const editJTContainer = document.getElementById('editJatuhTempoContainer');
+            if (item.status === 'Utang') {
+                editJTContainer.classList.remove('hidden');
+                document.getElementById('editJatuhTempo').value = (item.jatuh_tempo && item.jatuh_tempo !== '-') ? item.jatuh_tempo.substring(0, 10) : '';
+            } else {
+                editJTContainer.classList.add('hidden');
+            }
+
+            // Items list (read-only)
+            const editItemsList = document.getElementById('editItemsList');
+            if (item.items && Array.isArray(item.items) && item.items.length > 0) {
+                editItemsList.innerHTML = item.items.map(i => `<div class="flex justify-between text-xs"><span>${i.produk} (${i.unit} unit)</span><span>${formatRupiah((i.unit||0)*(i.harga_beli||0))}</span></div>`).join('');
+            } else {
+                editItemsList.innerHTML = '<p class="text-xs text-gray-400 italic">Tidak ada data produk</p>';
+            }
+
+            // Status change handler
+            document.getElementById('editStatus').onchange = function() {
+                if (this.value === 'Utang') editJTContainer.classList.remove('hidden');
+                else editJTContainer.classList.add('hidden');
+            };
+
+            const modal = document.getElementById("modalEditNota");
+            const content = document.getElementById("modalEditNotaContent");
+            modal.classList.remove("hidden");
+            setTimeout(() => { modal.classList.remove("opacity-0"); content.classList.remove("scale-95"); content.classList.add("scale-100"); }, 10);
+        };
+
+        window.tutupModalEditNota = function () {
+            const modal = document.getElementById("modalEditNota");
+            const content = document.getElementById("modalEditNotaContent");
+            modal.classList.add("opacity-0"); content.classList.remove("scale-100"); content.classList.add("scale-95");
+            setTimeout(() => { modal.classList.add("hidden"); }, 300);
+        };
+
+        document.getElementById('editNotaForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editNotaId').value;
+            const tanggal = document.getElementById('editTanggal').value;
+            const supplier = document.getElementById('editSupplier').value;
+            const status = document.getElementById('editStatus').value;
+            const jatuhTempo = status === 'Utang' ? document.getElementById('editJatuhTempo').value : '-';
+
+            if (!tanggal || !supplier) {
+                window.pushNotification("Tanggal dan Supplier wajib diisi!", "error");
+                return;
+            }
+
+            const btn = document.getElementById('btnSimpanEditNota');
+            const oldText = btn.innerHTML;
+            btn.innerHTML = 'Menyimpan...';
+            btn.disabled = true;
+
+            const payload = { tanggal, supplier, status, jatuh_tempo: jatuhTempo };
+            if (status === 'Lunas') {
+                // fetch current total to set terbayar
+                try {
+                    const res = await fetch(`https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/nota_supplier/${id}.json`);
+                    const current = await res.json();
+                    payload.terbayar = parseFloat(current.total_nota || current.total) || 0;
+                } catch(e) {}
+            }
+
+            try {
+                await fetch(`https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/nota_supplier/${id}.json`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                window.pushNotification("Nota berhasil diperbarui.");
+                window.tutupModalEditNota();
+                fetchData();
+            } catch (error) {
+                console.error("Gagal update nota:", error);
+                window.pushNotification("Gagal menyimpan perubahan.", "error");
+            } finally {
+                btn.innerHTML = oldText;
+                btn.disabled = false;
+            }
+        });
+
+        // ==========================================
+        // JENIS UNIT - FETCH & KELOLA (CRUD)
+        // ==========================================
+        let unitList = [];
+        const fetchUnitData = async () => {
+            try {
+                const res = await fetch(URL_UNIT + '?ts=' + Date.now());
+                const data = await res.json();
+                unitList = data ? Object.entries(data).map(([id, val]) => ({ id, nama: val.nama || val })) : [];
+                const dl = document.getElementById('unitSuggestions');
+                dl.innerHTML = '';
+                unitList.forEach(u => {
+                    const o = document.createElement('option');
+                    o.value = typeof u.nama === 'string' ? u.nama : u.id;
+                    dl.appendChild(o);
+                });
+            } catch(e) {
+                console.error('Gagal fetch unit:', e);
+            }
+        };
+        fetchUnitData();
+
+        window.kelolaUnit = async function() {
+            const listHtml = unitList.map(u => `<span class="inline-flex items-center gap-1 bg-gray-100 rounded-full px-3 py-1 text-xs font-bold m-0.5">${typeof u.nama === 'string' ? u.nama : u.id} <button type="button" data-id="${u.id}" class="swal-del-unit text-red-400 hover:text-red-600 ml-1">✕</button></span>`).join('') || '<span class="text-gray-400 text-xs">Belum ada unit</span>';
+            const { value: namaUnit } = await Swal.fire({
+                title: 'Kelola Jenis Unit',
+                html: `<div class="flex flex-wrap gap-1 mb-4 justify-center" id="swalUnitList">${listHtml}</div><input id="swalInputUnit" class="w-full border border-gray-300 rounded-lg p-2 text-center" placeholder="Tambah unit baru (misal: kg)">`,
+                confirmButtonText: '＋ Tambah',
+                confirmButtonColor: '#1e5c33',
+                showCancelButton: true,
+                cancelButtonText: 'Tutup',
+                didOpen: () => {
+                    document.querySelectorAll('.swal-del-unit').forEach(btn => {
+                        btn.addEventListener('click', async () => {
+                            const uid = btn.dataset.id;
+                            await fetch(`https://buku-besar-keuangan-default-rtdb.asia-southeast1.firebasedatabase.app/jenis_unit/${uid}.json`, { method: 'DELETE' });
+                            await fetchUnitData();
+                            Swal.close();
+                            window.kelolaUnit();
+                        });
+                    });
+                },
+                preConfirm: () => document.getElementById('swalInputUnit').value.trim()
+            });
+            if (namaUnit) {
+                await fetch(URL_UNIT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nama: namaUnit }) });
+                await fetchUnitData();
+                window.pushNotification(`Unit "${namaUnit}" ditambahkan.`);
+            }
+        };
+
+        // Set default date
+        document.getElementById('inputTanggal').valueAsDate = new Date();
+    </script>
+</body>
+</html>
